@@ -95,6 +95,7 @@ final List<Restaurant> demoRestaurants = [
   Restaurant(
     name: 'Lotus',
     openDays: 'Open every day',
+    openWeekdays: const [1, 2, 3, 4, 5, 6, 7],
     breakfast: const MealHours(open: '07:00', close: '10:30'),
     lunch: const MealHours(open: '12:30', close: '15:00'),
     dinner: const MealHours(open: '19:00', close: '22:30'),
@@ -102,6 +103,7 @@ final List<Restaurant> demoRestaurants = [
   Restaurant(
     name: 'Sea Breeze',
     openDays: 'Open every day',
+    openWeekdays: const [1, 2, 3, 4, 5, 6, 7],
     breakfast: const MealHours(),
     lunch: const MealHours(open: '13:00', close: '16:00'),
     dinner: const MealHours(open: '18:30', close: '23:00'),
@@ -109,6 +111,7 @@ final List<Restaurant> demoRestaurants = [
   Restaurant(
     name: 'Garden Grill',
     openDays: 'Thursday to Sunday',
+    openWeekdays: const [4, 5, 6, 7],
     breakfast: const MealHours(),
     lunch: const MealHours(),
     dinner: const MealHours(open: '19:00', close: '23:00'),

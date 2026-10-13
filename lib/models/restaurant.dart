@@ -13,6 +13,7 @@ class Restaurant {
   const Restaurant({
     required this.name,
     required this.openDays,
+    required this.openWeekdays,
     required this.breakfast,
     required this.lunch,
     required this.dinner,
@@ -20,6 +21,7 @@ class Restaurant {
 
   final String name;
   final String openDays;
+  final List<int> openWeekdays;
   final MealHours breakfast;
   final MealHours lunch;
   final MealHours dinner;

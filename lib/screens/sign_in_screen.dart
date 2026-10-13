@@ -3,9 +3,9 @@ import 'package:gest_managment_app/widgets/custom_text_field.dart';
 
 import '../data/demo_data.dart';
 import '../network/api_service.dart';
-import '../screens/home_screen.dart';
 import '../utils/theme.dart';
 import '../widgets/app_logo.dart';
+import '../widgets/BottomNavigationBar_item.dart';
 
 class SignInScreen extends StatefulWidget {
   const SignInScreen({super.key});
@@ -58,7 +58,7 @@ class _SignInScreenState extends State<SignInScreen> {
       Session.currentStay = stay;
       await Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (context) => const HomeScreen()),
+        MaterialPageRoute(builder: (context) => const MainShell()),
       );
     } on InvalidCredentialsException {
       if (!mounted) return;
@@ -93,7 +93,7 @@ class _SignInScreenState extends State<SignInScreen> {
                 child: Column(
                   children: [
                     const SizedBox(height: 48),
-                    const AppLogo(height: 90),
+                     AppLogo(height: 90),
                     const SizedBox(height: 16),
                     Text(
                       demoHotelName,
