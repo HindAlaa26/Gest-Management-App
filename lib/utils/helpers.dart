@@ -1,5 +1,58 @@
 import '../models/event_item.dart';
+import '../models/guest_stay.dart';
 import '../models/restaurant.dart';
+
+const List<String> weekdayNames = [
+  'Mon',
+  'Tue',
+  'Wed',
+  'Thu',
+  'Fri',
+  'Sat',
+  'Sun',
+];
+
+const List<String> fullWeekdayNames = [
+  'Monday',
+  'Tuesday',
+  'Wednesday',
+  'Thursday',
+  'Friday',
+  'Saturday',
+  'Sunday',
+];
+
+const List<String> monthNames = [
+  '',
+  'January',
+  'February',
+  'March',
+  'April',
+  'May',
+  'June',
+  'July',
+  'August',
+  'September',
+  'October',
+  'November',
+  'December',
+];
+
+const List<String> shortMonthNames = [
+  '',
+  'Jan',
+  'Feb',
+  'Mar',
+  'Apr',
+  'May',
+  'Jun',
+  'Jul',
+  'Aug',
+  'Sep',
+  'Oct',
+  'Nov',
+  'Dec',
+];
 
 int minutesOf(String hhmm) {
   final parts = hhmm.split(':');
@@ -13,23 +66,26 @@ int minutesOf(String hhmm) {
 }
 
 String formatDay(DateTime d) {
-  const months = [
-    '',
-    'Jan',
-    'Feb',
-    'Mar',
-    'Apr',
-    'May',
-    'Jun',
-    'Jul',
-    'Aug',
-    'Sep',
-    'Oct',
-    'Nov',
-    'Dec',
-  ];
+  return '${d.day} ${shortMonthNames[d.month]}';
+}
 
-  return '${d.day} ${months[d.month]}';
+String formatFullDate(DateTime d) {
+  return '${fullWeekdayNames[d.weekday - 1]}, ${d.day} ${monthNames[d.month]}';
+}
+
+String dayTitle(DateTime d) {
+  final today = DateTime.now();
+  final tomorrow = today.add(const Duration(days: 1));
+
+  if (isSameDay(d, today)) {
+    return 'Today, ${formatDay(d)}';
+  }
+
+  if (isSameDay(d, tomorrow)) {
+    return 'Tomorrow, ${formatDay(d)}';
+  }
+
+  return '${weekdayNames[d.weekday - 1]}, ${formatDay(d)}';
 }
 
 String greeting() {
@@ -45,6 +101,10 @@ String greeting() {
 
 bool sameDay(DateTime a, DateTime b) {
   return a.year == b.year && a.month == b.month && a.day == b.day;
+}
+
+bool isSameDay(DateTime a, DateTime b) {
+  return sameDay(a, b);
 }
 
 String timeFromMinutes(int totalMinutes) {
@@ -95,6 +155,36 @@ EventItem? nextEvent(List<EventItem> events) {
   });
 
   return upcoming.first;
+}
+
+List<EventItem> eventsDuringStay(List<EventItem> all, GuestStay stay) {
+  final stayStart = DateTime(
+    DateTime.now().year,
+    DateTime.now().month,
+    DateTime.now().day,
+  );
+  final stayEnd = DateTime(
+    stay.checkout.year,
+    stay.checkout.month,
+    stay.checkout.day,
+  );
+
+  final filtered = all.where((event) {
+    final eventDate = DateTime(event.date.year, event.date.month, event.date.day);
+    return !eventDate.isBefore(stayStart) && !eventDate.isAfter(stayEnd);
+  }).toList();
+
+  filtered.sort((a, b) {
+    final aDate = DateTime(a.date.year, a.date.month, a.date.day);
+    final bDate = DateTime(b.date.year, b.date.month, b.date.day);
+    final dateCompare = aDate.compareTo(bDate);
+    if (dateCompare != 0) {
+      return dateCompare;
+    }
+    return minutesOf(a.startTime).compareTo(minutesOf(b.startTime));
+  });
+
+  return filtered;
 }
 
 List<Restaurant> openToday(List<Restaurant> all) {
