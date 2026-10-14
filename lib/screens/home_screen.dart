@@ -10,7 +10,11 @@ import '../screens/sign_in_screen.dart';
 import '../utils/helpers.dart';
 import '../utils/theme.dart';
 import '../widgets/app_logo.dart';
-import '../widgets/type_chip.dart';
+import '../widgets/empty_state_card.dart';
+import '../widgets/error_retry_card.dart';
+import '../widgets/event_card.dart';
+import '../widgets/loading_view.dart';
+import '../widgets/section_label.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -103,21 +107,15 @@ class _HomeScreenState extends State<HomeScreen> {
             if (loading)
               const Padding(
                 padding: EdgeInsets.only(top: 20),
-                child: Center(
-                  child: SizedBox(
-                    width: 28,
-                    height: 28,
-                    child: CircularProgressIndicator(
-                      color: AppColors.gold,
-                      strokeWidth: 3,
-                    ),
-                  ),
-                ),
+                child: LoadingView(),
               )
             else if (error != null)
               Padding(
                 padding: const EdgeInsets.only(top: 18),
-                child: buildErrorCard(),
+                child: ErrorRetryCard(
+                  message: error ?? 'Could not load. Pull to retry.',
+                  onRetry: loadData,
+                ),
               ),
             const SizedBox(height: 28),
             buildNextSection(next),
@@ -300,147 +298,19 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget buildErrorCard() {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: AppColors.card,
-        borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: AppColors.gold.withValues(alpha: 0.3)),
-      ),
-      child: Column(
-        children: [
-          Text(
-            error ?? 'Could not load. Pull to retry.',
-            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-              color: AppColors.navy,
-            ),
-          ),
-          const SizedBox(height: 12),
-          SizedBox(
-            width: double.infinity,
-            child: OutlinedButton(
-              onPressed: loadData,
-              child: const Text('Retry'),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
   Widget buildNextSection(EventItem? next) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          'NEXT',
-          style: Theme.of(context).textTheme.labelLarge?.copyWith(
-            color: AppColors.gold,
-            letterSpacing: 1.2,
-            fontWeight: FontWeight.w600,
-          ),
-        ),
+        const SectionLabel('NEXT'),
         const SizedBox(height: 12),
         if (next == null)
-          Container(
-            padding: const EdgeInsets.all(18),
-            decoration: BoxDecoration(
-              color: AppColors.card,
-              borderRadius: BorderRadius.circular(18),
-              border: Border.all(color: AppColors.gold.withValues(alpha: 0.3)),
-            ),
-            child: Text(
-              'No upcoming events',
-              style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                color: AppColors.navy,
-              ),
-            ),
-          )
+          const EmptyStateCard('No upcoming events')
         else
-          Container(
-            padding: const EdgeInsets.all(18),
-            decoration: BoxDecoration(
-              color: AppColors.card,
-              borderRadius: BorderRadius.circular(18),
-              border: Border.all(color: AppColors.gold.withValues(alpha: 0.3)),
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Expanded(
-                      child: Text(
-                        next.title,
-                        style: GoogleFonts.cormorantGaramond(
-                          fontSize: 22,
-                          fontWeight: FontWeight.w700,
-                          color: AppColors.navy,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    TypeChip(type: next.type),
-                  ],
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  next.description,
-                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: AppColors.muted,
-                  ),
-                ),
-                const SizedBox(height: 14),
-                const Divider(),
-                const SizedBox(height: 14),
-                Row(
-                  children: [
-                    Expanded(
-                      child: Row(
-                        children: [
-                          const Icon(
-                            Icons.location_on_outlined,
-                            color: AppColors.gold,
-                            size: 18,
-                          ),
-                          const SizedBox(width: 8),
-                          Expanded(
-                            child: Text(
-                              next.place,
-                              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                                color: AppColors.navy,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    Expanded(
-                      child: Row(
-                        children: [
-                          const Icon(
-                            Icons.access_time,
-                            color: AppColors.gold,
-                            size: 18,
-                          ),
-                          const SizedBox(width: 8),
-                          Expanded(
-                            child: Text(
-                              timeLabel(next),
-                              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                                color: AppColors.navy,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-            ),
+          EventCard(
+            event: next,
+            showDescription: true,
+            showDate: !isSameDay(next.date, DateTime.now()),
           ),
       ],
     );

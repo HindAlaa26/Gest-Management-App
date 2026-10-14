@@ -4,10 +4,10 @@ import 'package:google_fonts/google_fonts.dart';
 import '../utils/theme.dart';
 
 class AppLogo extends StatelessWidget {
-   AppLogo({super.key, this.height = 90, this.logoPath});
+  const AppLogo({super.key, this.height = 90, this.logoPath});
 
   final double height;
-  String? logoPath;
+  final String? logoPath;
   @override
   Widget build(BuildContext context) {
     return Image.asset(
