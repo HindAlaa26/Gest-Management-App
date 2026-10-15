@@ -1,11 +1,15 @@
+import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:gest_managment_app/models/event_item.dart';
-import 'package:gest_managment_app/models/guest_stay.dart';
-import 'package:gest_managment_app/utils/helpers.dart';
+import 'package:gest_managment_app/core/models/event_item.dart';
+import 'package:gest_managment_app/core/models/guest_stay.dart';
+import 'package:gest_managment_app/core/models/restaurant.dart';
+import 'package:gest_managment_app/core/utils/helpers.dart';
+import 'package:gest_managment_app/core/widgets/meal_row.dart';
+import 'package:gest_managment_app/core/widgets/restaurant_card.dart';
 
 void main() {
-  group('event helper logic', () {
+group('event helper logic', () {
     test('formats a complete date string and identifies the same calendar day', () {
       final date = DateTime.now();
       final weekDays = [
@@ -94,6 +98,44 @@ void main() {
 
       expect(filtered.map((event) => event.id).toList(), ['today', 'tomorrow']);
       expect(filtered[0].date.isBefore(filtered[1].date) || isSameDay(filtered[0].date, filtered[1].date), isTrue);
+    });
+  });
+
+  group('restaurant display UI', () {
+    testWidgets('shows closed meal label and the restaurant card', (tester) async {
+      final restaurant = Restaurant(
+        name: 'Sea Breeze',
+        openDays: 'Open every day',
+        openWeekdays: const [1, 2, 3, 4, 5, 6, 7],
+        breakfast: const MealHours(),
+        lunch: const MealHours(open: '13:00', close: '16:00'),
+        dinner: const MealHours(open: '18:30', close: '23:00'),
+      );
+
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: MealRow(
+              mealName: 'Breakfast',
+              hours: restaurant.breakfast,
+              icon: Icons.wb_twilight_outlined,
+            ),
+          ),
+        ),
+      );
+
+      expect(find.text('Closed'), findsOneWidget);
+
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: RestaurantCard(restaurant: restaurant),
+          ),
+        ),
+      );
+
+      expect(find.text('Sea Breeze'), findsOneWidget);
+      expect(find.text('Breakfast'), findsOneWidget);
     });
   });
 }
