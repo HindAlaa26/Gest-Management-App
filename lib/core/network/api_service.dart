@@ -16,10 +16,10 @@ class Session {
 
 class ApiService {
   static const String baseUrl = '';
+  static final List<FeedbackItem> sentItems = <FeedbackItem>[];
 
   Future<GuestStay> signIn(String roomNumber, String lastName) async {
     await Future.delayed(const Duration(milliseconds: 600));
- 
 
     final room = roomNumber.trim();
     final familyName = lastName.trim();
@@ -39,7 +39,6 @@ class ApiService {
     return demoEvents;
   }
 
-
   Future<List<Restaurant>> getRestaurants() async {
     await Future.delayed(const Duration(milliseconds: 600));
 
@@ -48,6 +47,8 @@ class ApiService {
 
   Future<String> sendFeedback(FeedbackItem item) async {
     await Future.delayed(const Duration(milliseconds: 600));
+
+    sentItems.add(item);
 
     final random = Random();
     final referenceNumber = 1000 + random.nextInt(9000);

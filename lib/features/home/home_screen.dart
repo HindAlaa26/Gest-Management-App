@@ -7,8 +7,7 @@ import 'package:gest_managment_app/core/models/guest_stay.dart';
 import 'package:gest_managment_app/core/models/restaurant.dart';
 import 'package:gest_managment_app/core/network/api_service.dart';
 import 'package:gest_managment_app/core/theme/theme.dart';
-import 'package:gest_managment_app/core/utils/helpers.dart';
-import 'package:gest_managment_app/core/widgets/empty_state_card.dart';
+import 'package:gest_managment_app/core/utils/helpers.dart';import 'package:gest_managment_app/core/utils/app_nav.dart';import 'package:gest_managment_app/core/widgets/empty_state_card.dart';
 import 'package:gest_managment_app/core/widgets/error_retry_card.dart';
 import 'package:gest_managment_app/core/widgets/event_card.dart';
 import 'package:gest_managment_app/core/widgets/loading_view.dart';
@@ -72,6 +71,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
   void signOut() {
     Session.currentStay = null;
+    AppNav.tab.value = 0;
     Navigator.pushAndRemoveUntil(
       context,
       MaterialPageRoute(builder: (context) => const SignInScreen()),
@@ -94,110 +94,115 @@ class _HomeScreenState extends State<HomeScreen> {
     final next = nextEvent(events);
     final openRestaurants = openToday(restaurants);
 
-    return Scaffold(
-      backgroundColor: AppColors.ivory,
-      body: RefreshIndicator(
-        color: AppColors.teal,
-        onRefresh: loadData,
-        child: ListView(
-          padding: const EdgeInsets.fromLTRB(20, 24, 20, 28),
-          children: [
-            buildHeader(stay),
-            const SizedBox(height: 18),
-            buildWelcomeCard(stay),
-            if (loading)
-              const Padding(
-                padding: EdgeInsets.only(top: 20),
-                child: LoadingView(),
-              )
-            else if (error != null)
-              Padding(
-                padding: const EdgeInsets.only(top: 18),
-                child: ErrorRetryCard(
-                  message: error ?? 'Could not load. Pull to retry.',
-                  onRetry: loadData,
+    return SafeArea(
+      child: Scaffold(
+        backgroundColor: AppColors.ivory,
+        appBar: buildHeader(stay),
+        body: RefreshIndicator(
+          color: AppColors.teal,
+          onRefresh: loadData,
+          child: ListView(
+            padding: const EdgeInsets.fromLTRB(20, 24, 20, 28),
+            children: [
+            
+              buildWelcomeCard(stay),
+              if (loading)
+                const Padding(
+                  padding: EdgeInsets.only(top: 20),
+                  child: LoadingView(),
+                )
+              else if (error != null)
+                Padding(
+                  padding: const EdgeInsets.only(top: 18),
+                  child: ErrorRetryCard(
+                    message: error ?? 'Could not load. Pull to retry.',
+                    onRetry: loadData,
+                  ),
                 ),
-              ),
-            const SizedBox(height: 28),
-            buildNextSection(next),
-            const SizedBox(height: 28),
-            buildRestaurantsSection(openRestaurants),
-          ],
+              const SizedBox(height: 28),
+              buildNextSection(next),
+              const SizedBox(height: 28),
+              buildRestaurantsSection(openRestaurants),
+            ],
+          ),
         ),
       ),
     );
   }
 
-  Widget buildHeader(GuestStay stay) {
-    return Center(
-      child: Row(
-        children: [
-          const LogoMark(size: 40),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Center(
-              child: Text(
-                demoHotelName,
-                style: GoogleFonts.cormorantGaramond(
-                  fontSize: 20,
-                  fontWeight: FontWeight.w700,
-                  color: AppColors.navy,
-                  letterSpacing: 0.5,
-                ),
-              ),
-            ),
-          ),
-          PopupMenuButton<String>(
-            icon: const Icon(Icons.person_outline, color: AppColors.gold),
-            color: AppColors.card,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(16),
-            ),
-            onSelected: (value) {
-              if (value == 'sign_out') {
-                signOut();
-              }
-            },
-            itemBuilder: (context) => [
-              PopupMenuItem<String>(
-                enabled: false,
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 4),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        stay.guestName,
-                        style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                          color: AppColors.navy,
-                          fontWeight: FontWeight.w700,
-                        ),
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        'Room ${stay.roomNumber}',
-                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                          color: AppColors.muted,
-                        ),
-                      ),
-                    ],
+  PreferredSizeWidget buildHeader(GuestStay stay) {
+    return AppBar(
+      centerTitle: true,
+      leading: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 8,vertical: 8),
+        child: const LogoMark(size: 40),
+      ),
+      title: Text(
+                  demoHotelName,
+                  style: GoogleFonts.cormorantGaramond(
+                    fontSize: 20,
+                    fontWeight: FontWeight.w700,
+                    color: AppColors.navy,
+                    letterSpacing: 0.5,
                   ),
                 ),
-              ),
-              const PopupMenuItem<String>(
-                value: 'sign_out',
-                child: Row(
-                  children: [
-                    Icon(Icons.logout_outlined, color: AppColors.navy),
-                    SizedBox(width: 8),
-                    Text('Sign out'),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        ],
-      ),
+                actions: [
+                    Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: PopupMenuButton<String>(
+                                    icon: const Icon(Icons.person_outline, color: AppColors.gold),
+                                    color: AppColors.card,
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(16),
+                                    ),
+                                    onSelected: (value) {
+                                      if (value == 'sign_out') {
+                                        signOut();
+                                      }
+                                    },
+                                    itemBuilder: (context) => [
+                                      PopupMenuItem<String>(
+                                        enabled: false,
+                                        child: Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 4),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            stay.guestName,
+                            style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                              color: AppColors.navy,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            'Room ${stay.roomNumber}',
+                            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                              color: AppColors.muted,
+                            ),
+                          ),
+                        ],
+                      ),
+                                        ),
+                                      ),
+                                      const PopupMenuItem<String>(
+                                        value: 'sign_out',
+                                        child: Row(
+                      children: [
+                        Icon(Icons.logout_outlined, color: AppColors.navy),
+                        SizedBox(width: 8),
+                        Text('Sign out'),
+                      ],
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                    ),
+          
+                ],
+     
+    
     );
   }
 

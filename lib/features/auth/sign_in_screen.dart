@@ -5,6 +5,7 @@ import 'package:gest_managment_app/core/network/api_service.dart';
 import 'package:gest_managment_app/core/theme/theme.dart';
 import 'package:gest_managment_app/core/widgets/app_logo.dart';
 import 'package:gest_managment_app/core/widgets/custom_text_field.dart';
+import 'package:gest_managment_app/core/widgets/loading_button.dart';
 import 'package:gest_managment_app/features/shell/main_shell.dart';
 
 class SignInScreen extends StatefulWidget {
@@ -178,37 +179,11 @@ class _SignInScreenState extends State<SignInScreen> {
                               textCapitalization: TextCapitalization.words,
                             ),
                             const SizedBox(height: 24),
-                            SizedBox(
-                              height: 56,
-                              child: ElevatedButton(
-                                onPressed: loading ? null : signIn,
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: AppColors.navy,
-                                  foregroundColor: Colors.white,
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(16),
-                                  ),
-                                  elevation: 3,
-                                  shadowColor: AppColors.navy.withAlpha(60),
-                                ),
-                                child: loading
-                                    ? const SizedBox(
-                                        width: 20,
-                                        height: 20,
-                                        child: CircularProgressIndicator(
-                                          strokeWidth: 2.5,
-                                          color: AppColors.card,
-                                        ),
-                                      )
-                                    : Row(
-                                        mainAxisAlignment: MainAxisAlignment.center,
-                                        children: const [
-                                          Text('Sign in'),
-                                          SizedBox(width: 8),
-                                          Icon(Icons.arrow_forward),
-                                        ],
-                                      ),
-                              ),
+                            LoadingButton(
+                              label: 'Sign in',
+                              onPressed: loading ? null : signIn,
+                              loading: loading,
+                             
                             ),
                             const SizedBox(height: 12),
                             if (error != null)

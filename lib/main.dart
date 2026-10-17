@@ -1,9 +1,11 @@
+import 'package:device_preview/device_preview.dart';
 import 'package:flutter/material.dart';
 
 import 'package:gest_managment_app/core/theme/theme.dart';
 import 'package:gest_managment_app/features/auth/sign_in_screen.dart';
 
 void main() {
+    DevicePreview.enable();
   runApp(const MyApp());
 }
 
