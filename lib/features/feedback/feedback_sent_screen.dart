@@ -12,7 +12,7 @@ class FeedbackSentScreen extends StatelessWidget {
 
   final String reference;
 
-  void _goHome(BuildContext context) {
+  void goHome(BuildContext context) {
     AppNav.tab.value = 0;
     Navigator.popUntil(context, (route) => route.isFirst);
   }
@@ -23,7 +23,7 @@ class FeedbackSentScreen extends StatelessWidget {
       canPop: false,
       onPopInvokedWithResult: (didPop, result) {
         if (!didPop) {
-          _goHome(context);
+          goHome(context);
         }
       },
       child: Scaffold(
@@ -62,7 +62,7 @@ class FeedbackSentScreen extends StatelessWidget {
                     width: 220,
                     child: LoadingButton(
                       label: 'Back to home',
-                      onPressed: () => _goHome(context),
+                      onPressed: () => goHome(context),
                     ),
                   ),
                 ],

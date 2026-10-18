@@ -94,17 +94,16 @@ class _HomeScreenState extends State<HomeScreen> {
     final next = nextEvent(events);
     final openRestaurants = openToday(restaurants);
 
-    return SafeArea(
-      child: Scaffold(
-        backgroundColor: AppColors.ivory,
-        appBar: buildHeader(stay),
-        body: RefreshIndicator(
+    return Scaffold(
+      backgroundColor: AppColors.ivory,
+      appBar: buildHeader(stay),
+      body: SafeArea(
+        child: RefreshIndicator(
           color: AppColors.teal,
           onRefresh: loadData,
           child: ListView(
-            padding: const EdgeInsets.fromLTRB(20, 24, 20, 28),
+            padding: const EdgeInsets.fromLTRB(20, 10, 20, 28),
             children: [
-            
               buildWelcomeCard(stay),
               if (loading)
                 const Padding(

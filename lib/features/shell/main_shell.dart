@@ -35,31 +35,34 @@ class MainShell extends StatelessWidget {
                 ),
               ),
             ),
-            child: BottomNavigationBar(
-              currentIndex: index,
-              onTap: (value) => AppNav.tab.value = value,
-              selectedItemColor: AppColors.teal,
-              unselectedItemColor: AppColors.muted,
-              backgroundColor: AppColors.card,
-              type: BottomNavigationBarType.fixed,
-              items: const [
-                BottomNavigationBarItem(
-                  icon: Icon(Icons.home_outlined),
-                  label: 'Home',
-                ),
-                BottomNavigationBarItem(
-                  icon: Icon(Icons.event_outlined),
-                  label: 'Events',
-                ),
-                BottomNavigationBarItem(
-                  icon: Icon(Icons.restaurant_outlined),
-                  label: 'Dining',
-                ),
-                BottomNavigationBarItem(
-                  icon: Icon(Icons.rate_review_outlined),
-                  label: 'Feedback',
-                ),
-              ],
+            child: SafeArea(
+              top: false,
+              child: BottomNavigationBar(
+                currentIndex: index,
+                onTap: (value) => AppNav.tab.value = value,
+                selectedItemColor: AppColors.teal,
+                unselectedItemColor: AppColors.muted,
+                backgroundColor: AppColors.card,
+                type: BottomNavigationBarType.fixed,
+                items: const [
+                  BottomNavigationBarItem(
+                    icon: Icon(Icons.home_outlined),
+                    label: 'Home',
+                  ),
+                  BottomNavigationBarItem(
+                    icon: Icon(Icons.event_outlined),
+                    label: 'Events',
+                  ),
+                  BottomNavigationBarItem(
+                    icon: Icon(Icons.restaurant_outlined),
+                    label: 'Dining',
+                  ),
+                  BottomNavigationBarItem(
+                    icon: Icon(Icons.rate_review_outlined),
+                    label: 'Feedback',
+                  ),
+                ],
+              ),
             ),
           ),
         );

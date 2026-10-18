@@ -67,26 +67,28 @@ class _EventsScreenState extends State<EventsScreen> {
       appBar: AppBar(
         title: const Text('Events & Parties'),
       ),
-      body: RefreshIndicator(
-        onRefresh: loadEvents,
-        child: ListView(
-          padding: const EdgeInsets.fromLTRB(20, 12, 20, 28),
-          children: [
-            const SectionLabel('DURING YOUR STAY'),
-            const SizedBox(height: 10),
-            const GoldDivider(width: 220),
-            const SizedBox(height: 20),
-            if (loading && events.isEmpty)
-              const LoadingView()
-            else if (error != null && events.isEmpty)
-              ErrorRetryCard(
-                message: error!,
-                onRetry: loadEvents,
-              )
-            else if (events.isEmpty)
-              const EmptyStateCard('No events during your stay')
-            else ...buildDayGroups(),
-          ],
+      body: SafeArea(
+        child: RefreshIndicator(
+          onRefresh: loadEvents,
+          child: ListView(
+            padding: const EdgeInsets.fromLTRB(20, 12, 20, 28),
+            children: [
+              const SectionLabel('DURING YOUR STAY'),
+              const SizedBox(height: 10),
+              const GoldDivider(width: 220),
+              const SizedBox(height: 20),
+              if (loading && events.isEmpty)
+                const LoadingView()
+              else if (error != null && events.isEmpty)
+                ErrorRetryCard(
+                  message: error!,
+                  onRetry: loadEvents,
+                )
+              else if (events.isEmpty)
+                const EmptyStateCard('No events during your stay')
+              else ...buildDayGroups(),
+            ],
+          ),
         ),
       ),
     );

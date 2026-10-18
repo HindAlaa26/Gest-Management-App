@@ -61,32 +61,34 @@ class _RestaurantsScreenState extends State<RestaurantsScreen> {
       appBar: AppBar(
         title: const Text('Dining'),
       ),
-      body: RefreshIndicator(
-        onRefresh: _loadRestaurants,
-        child: ListView(
-          padding: const EdgeInsets.fromLTRB(20, 12, 20, 28),
-          children: [
-            const SectionLabel('RESTAURANTS'),
-            const SizedBox(height: 10),
-            const GoldDivider(width: 220),
-            const SizedBox(height: 20),
-            if (_loading && _restaurants.isEmpty)
-              const LoadingView()
-            else if (_error != null && _restaurants.isEmpty)
-              ErrorRetryCard(
-                message: _error!,
-                onRetry: _loadRestaurants,
-              )
-            else if (_restaurants.isEmpty)
-              const EmptyStateCard('No restaurants available')
-            else ...[
-              for (final restaurant in _restaurants)
-                Padding(
-                  padding: const EdgeInsets.only(bottom: 16),
-                  child: RestaurantCard(restaurant: restaurant),
-                ),
+      body: SafeArea(
+        child: RefreshIndicator(
+          onRefresh: _loadRestaurants,
+          child: ListView(
+            padding: const EdgeInsets.fromLTRB(20, 12, 20, 28),
+            children: [
+              const SectionLabel('RESTAURANTS'),
+              const SizedBox(height: 10),
+              const GoldDivider(width: 220),
+              const SizedBox(height: 20),
+              if (_loading && _restaurants.isEmpty)
+                const LoadingView()
+              else if (_error != null && _restaurants.isEmpty)
+                ErrorRetryCard(
+                  message: _error!,
+                  onRetry: _loadRestaurants,
+                )
+              else if (_restaurants.isEmpty)
+                const EmptyStateCard('No restaurants available')
+              else ...[
+                for (final restaurant in _restaurants)
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 16),
+                    child: RestaurantCard(restaurant: restaurant),
+                  ),
+              ],
             ],
-          ],
+          ),
         ),
       ),
     );
