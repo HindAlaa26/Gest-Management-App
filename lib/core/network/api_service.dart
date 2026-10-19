@@ -87,7 +87,10 @@ class ApiService {
     return reference;
   }
 
-  static final Map<String, List<GuestRequest>> myRequestsByRoom = {};
+  static final Map<String, List<GuestRequest>> myRequestsByRoom = {
+    for (final entry in demoRequestsByRoom.entries)
+      entry.key: List<GuestRequest>.from(entry.value),
+  };
 
   Future<List<CatalogueItem>> getCatalogue(VendorType type) async {
     await Future.delayed(const Duration(milliseconds: 600));
@@ -119,6 +122,100 @@ class ApiService {
 
     return request;
   }
+
+  Future<List<GuestRequest>> getMyRequests() async {
+    await Future.delayed(const Duration(milliseconds: 500));
+
+    final room = Session.currentStay?.roomNumber ?? 'unknown';
+    final list = List<GuestRequest>.from(
+      myRequestsByRoom[room] ?? const <GuestRequest>[],
+    );
+    list.sort((a, b) => b.createdAt.compareTo(a.createdAt));
+    return list;
+  }
+
+  Future<GuestRequest> getRequest(String reference) async {
+    await Future.delayed(const Duration(milliseconds: 300));
+
+    return _findRequest(reference);
+  }
+
+  Future<GuestRequest> changeRequest({
+    required String reference,
+    required List<RequestLine> lines,
+    required RequestUrgency urgency,
+  }) async {
+    await Future.delayed(const Duration(milliseconds: 500));
+
+    return _updateRequest(reference, (current) {
+      if (!current.canChange) throw RequestNotAllowedException();
+      return current.copyWith(lines: lines, urgency: urgency);
+    });
+  }
+
+  Future<GuestRequest> cancelRequest({
+    required String reference,
+    required String reason,
+  }) async {
+    await Future.delayed(const Duration(milliseconds: 500));
+
+    return _updateRequest(reference, (current) {
+      if (!current.canCancel) throw RequestNotAllowedException();
+      return current.copyWith(
+        status: RequestStatus.cancelled,
+        cancelReason: reason,
+        history: [
+          ...current.history,
+          RequestStatusEntry(status: RequestStatus.cancelled, at: DateTime.now()),
+        ],
+      );
+    });
+  }
+
+  Future<GuestRequest> rateRequest({
+    required String reference,
+    required int stars,
+    String comment = '',
+  }) async {
+    await Future.delayed(const Duration(milliseconds: 500));
+
+    return _updateRequest(reference, (current) {
+      if (!current.canRate) throw RequestNotAllowedException();
+      return current.copyWith(
+        rating: RequestRating(
+          stars: stars,
+          comment: comment,
+          ratedAt: DateTime.now(),
+        ),
+      );
+    });
+  }
+
+  GuestRequest _findRequest(String reference) {
+    final room = Session.currentStay?.roomNumber ?? 'unknown';
+    for (final request in myRequestsByRoom[room] ?? const <GuestRequest>[]) {
+      if (request.reference == reference) return request;
+    }
+    throw RequestNotFoundException();
+  }
+
+  GuestRequest _updateRequest(
+    String reference,
+    GuestRequest Function(GuestRequest current) update,
+  ) {
+    final room = Session.currentStay?.roomNumber ?? 'unknown';
+    final list = myRequestsByRoom[room] ?? <GuestRequest>[];
+    final index = list.indexWhere((request) => request.reference == reference);
+    if (index == -1) throw RequestNotFoundException();
+
+    final updated = update(list[index]);
+    list[index] = updated;
+    return updated;
+  }
 }
 
 class InvalidCredentialsException implements Exception {}
+
+class RequestNotFoundException implements Exception {}
+
+class RequestNotAllowedException implements Exception {}

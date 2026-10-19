@@ -13,6 +13,7 @@ import 'package:gest_managment_app/core/widgets/request_status_badge.dart';
 import 'package:gest_managment_app/core/widgets/royal_card.dart';
 import 'package:gest_managment_app/core/widgets/section_label.dart';
 import 'package:gest_managment_app/core/widgets/success_mark.dart';
+import 'package:gest_managment_app/features/requests/request_details_screen.dart';
 
 class RequestSentScreen extends StatefulWidget {
   const RequestSentScreen({super.key, required this.request});
@@ -25,6 +26,24 @@ class RequestSentScreen extends StatefulWidget {
 
 class _RequestSentScreenState extends State<RequestSentScreen> {
   bool leaving = false;
+
+  void trackRequest(BuildContext context) {
+    if (leaving) return;
+    leaving = true;
+
+    final navigator = Navigator.of(context);
+    final reference = widget.request.reference;
+    navigator.popUntil((route) => route.isFirst);
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      AppNav.tab.value = 4;
+      navigator.push(
+        MaterialPageRoute(
+          builder: (_) => RequestDetailsScreen(reference: reference),
+        ),
+      );
+    });
+  }
 
   void goToTab(BuildContext context, int tab) {
     if (leaving) return;
@@ -107,8 +126,7 @@ class _RequestSentScreenState extends State<RequestSentScreen> {
               const SizedBox(height: 24),
               LoadingButton(
                 label: 'Track my request',
-                // TASK 22: open the request details here instead.
-                onPressed: () => goToTab(context, 4),
+                onPressed: () => trackRequest(context),
               ),
               const SizedBox(height: 12),
               OutlinedButton(

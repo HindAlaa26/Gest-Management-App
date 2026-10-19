@@ -220,4 +220,116 @@ const List<CatalogueItem> demoCatalogue = [
   ),
 ];
 
+CatalogueItem _demoItem(String id) =>
+    demoCatalogue.firstWhere((item) => item.id == id);
+
+final Map<String, List<GuestRequest>> demoRequestsByRoom = {
+  '305': [
+    GuestRequest(
+      reference: 'REQ-1045',
+      vendorType: VendorType.water,
+      lines: [
+        RequestLine(item: _demoItem('wat-1'), qty: 2),
+        RequestLine(item: _demoItem('wat-2'), qty: 1),
+      ],
+      urgency: RequestUrgency.urgent,
+      note: '',
+      createdAt: _now.subtract(const Duration(minutes: 20)),
+      status: RequestStatus.newRequest,
+    ),
+    GuestRequest(
+      reference: 'REQ-1044',
+      vendorType: VendorType.cleaning,
+      lines: [RequestLine(item: _demoItem('cln-1'), qty: 2)],
+      urgency: RequestUrgency.normal,
+      note: 'Please knock softly.',
+      createdAt: _now.subtract(const Duration(minutes: 50)),
+      status: RequestStatus.assigned,
+      history: [
+        RequestStatusEntry(
+          status: RequestStatus.newRequest,
+          at: _now.subtract(const Duration(minutes: 50)),
+        ),
+        RequestStatusEntry(
+          status: RequestStatus.assigned,
+          at: _now.subtract(const Duration(minutes: 40)),
+        ),
+      ],
+    ),
+    GuestRequest(
+      reference: 'REQ-1043',
+      vendorType: VendorType.maintenance,
+      lines: [RequestLine(item: _demoItem('mnt-1'), qty: 1)],
+      urgency: RequestUrgency.normal,
+      note: '',
+      createdAt: _now.subtract(const Duration(hours: 2)),
+      status: RequestStatus.inProgress,
+      history: [
+        RequestStatusEntry(
+          status: RequestStatus.newRequest,
+          at: _now.subtract(const Duration(hours: 2)),
+        ),
+        RequestStatusEntry(
+          status: RequestStatus.assigned,
+          at: _now.subtract(const Duration(hours: 1, minutes: 50)),
+        ),
+        RequestStatusEntry(
+          status: RequestStatus.inProgress,
+          at: _now.subtract(const Duration(hours: 1, minutes: 30)),
+        ),
+      ],
+    ),
+    GuestRequest(
+      reference: 'REQ-1042',
+      vendorType: VendorType.drinks,
+      lines: [
+        RequestLine(item: _demoItem('drk-2'), qty: 1),
+        RequestLine(item: _demoItem('drk-1'), qty: 1),
+      ],
+      urgency: RequestUrgency.normal,
+      note: '',
+      createdAt: _now.subtract(const Duration(hours: 5)),
+      status: RequestStatus.done,
+      history: [
+        RequestStatusEntry(
+          status: RequestStatus.newRequest,
+          at: _now.subtract(const Duration(hours: 5)),
+        ),
+        RequestStatusEntry(
+          status: RequestStatus.assigned,
+          at: _now.subtract(const Duration(hours: 4, minutes: 50)),
+        ),
+        RequestStatusEntry(
+          status: RequestStatus.inProgress,
+          at: _now.subtract(const Duration(hours: 4, minutes: 40)),
+        ),
+        RequestStatusEntry(
+          status: RequestStatus.done,
+          at: _now.subtract(const Duration(hours: 4, minutes: 15)),
+        ),
+      ],
+    ),
+    GuestRequest(
+      reference: 'REQ-1040',
+      vendorType: VendorType.drinks,
+      lines: [RequestLine(item: _demoItem('drk-2'), qty: 1)],
+      urgency: RequestUrgency.normal,
+      note: '',
+      createdAt: _now.subtract(const Duration(hours: 26)),
+      status: RequestStatus.cancelled,
+      cancelReason: 'Changed my mind',
+      history: [
+        RequestStatusEntry(
+          status: RequestStatus.newRequest,
+          at: _now.subtract(const Duration(hours: 26)),
+        ),
+        RequestStatusEntry(
+          status: RequestStatus.cancelled,
+          at: _now.subtract(const Duration(hours: 25, minutes: 50)),
+        ),
+      ],
+    ),
+  ],
+};
+
 const String demoHotelName = 'Grand Palm Hotel';

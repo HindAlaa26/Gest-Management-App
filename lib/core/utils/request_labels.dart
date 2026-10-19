@@ -77,6 +77,30 @@ extension RequestUrgencyLabels on RequestUrgency {
   }
 }
 
+extension RequestStatusGroups on RequestStatus {
+  bool get isActive =>
+      this == RequestStatus.newRequest ||
+      this == RequestStatus.assigned ||
+      this == RequestStatus.inProgress;
+}
+
+String formatRequestTime(DateTime time) {
+  const months = [
+    'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+    'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
+  ];
+  final now = DateTime.now();
+  final today = DateTime(now.year, now.month, now.day);
+  final day = DateTime(time.year, time.month, time.day);
+  final clock =
+      '${time.hour.toString().padLeft(2, '0')}:${time.minute.toString().padLeft(2, '0')}';
+  final daysAgo = today.difference(day).inDays;
+
+  if (daysAgo == 0) return 'Today, $clock';
+  if (daysAgo == 1) return 'Yesterday, $clock';
+  return '${time.day} ${months[time.month - 1]}, $clock';
+}
+
 String formatPrice(double price) {
   if (price <= 0) return 'Free';
   final text = price == price.roundToDouble()

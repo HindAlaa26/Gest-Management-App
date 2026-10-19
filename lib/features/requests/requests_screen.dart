@@ -8,6 +8,7 @@ import 'package:gest_managment_app/core/widgets/gold_divider.dart';
 import 'package:gest_managment_app/core/widgets/royal_card.dart';
 import 'package:gest_managment_app/core/widgets/section_label.dart';
 import 'package:gest_managment_app/features/requests/catalogue_screen.dart';
+import 'package:gest_managment_app/features/requests/my_requests_screen.dart';
 
 class RequestsScreen extends StatelessWidget {
   const RequestsScreen({super.key});
@@ -73,10 +74,12 @@ class RequestsScreen extends StatelessWidget {
             const SizedBox(height: 12),
             Center(
               child: TextButton(
-                // TASK 22: open the "My requests" list here.
                 onPressed: () {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('My requests is coming soon')),
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => const MyRequestsScreen(),
+                    ),
                   );
                 },
                 child: const Row(
