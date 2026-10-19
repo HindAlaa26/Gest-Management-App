@@ -5,7 +5,7 @@ import 'package:gest_managment_app/core/theme/theme.dart';
 import 'package:gest_managment_app/features/splash/splash_screen.dart';
 
 void main() {
-   // DevicePreview.enable();
+  //  DevicePreview.enable();
   runApp(const MyApp());
 }
 

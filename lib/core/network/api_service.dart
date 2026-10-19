@@ -5,6 +5,7 @@ import 'package:gest_managment_app/core/models/case_status.dart';
 import 'package:gest_managment_app/core/models/event_item.dart';
 import 'package:gest_managment_app/core/models/feedback_item.dart';
 import 'package:gest_managment_app/core/models/feedback_record.dart';
+import 'package:gest_managment_app/core/models/guest_request.dart';
 import 'package:gest_managment_app/core/models/guest_stay.dart';
 import 'package:gest_managment_app/core/models/restaurant.dart';
 
@@ -83,8 +84,40 @@ class ApiService {
       ),
     );
 
-    // DEMO: replace with the real API calls. Backend: #50 creates the case; a "my cases" GET endpoint is still to be agreed with Ahmed Alshobaki.
     return reference;
+  }
+
+  static final Map<String, List<GuestRequest>> myRequestsByRoom = {};
+
+  Future<List<CatalogueItem>> getCatalogue(VendorType type) async {
+    await Future.delayed(const Duration(milliseconds: 600));
+
+    return demoCatalogue.where((item) => item.vendorType == type).toList();
+  }
+
+
+  Future<GuestRequest> sendRequest({
+    required VendorType vendorType,
+    required RequestUrgency urgency,
+    required List<RequestLine> lines,
+    String note = '',
+  }) async {
+    await Future.delayed(const Duration(milliseconds: 600));
+
+    final request = GuestRequest(
+      reference: 'REQ-${1000 + Random().nextInt(9000)}',
+      vendorType: vendorType,
+      lines: lines,
+      urgency: urgency,
+      note: note,
+      createdAt: DateTime.now(),
+      status: RequestStatus.newRequest,
+    );
+
+    final room = Session.currentStay?.roomNumber ?? 'unknown';
+    myRequestsByRoom.putIfAbsent(room, () => <GuestRequest>[]).insert(0, request);
+
+    return request;
   }
 }
 

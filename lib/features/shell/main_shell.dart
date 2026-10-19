@@ -5,6 +5,7 @@ import 'package:gest_managment_app/core/utils/app_nav.dart';
 import 'package:gest_managment_app/features/events/events_screen.dart';
 import 'package:gest_managment_app/features/feedback/feedback_screen.dart';
 import 'package:gest_managment_app/features/home/home_screen.dart';
+import 'package:gest_managment_app/features/requests/requests_screen.dart';
 import 'package:gest_managment_app/features/restaurants/restaurants_screen.dart';
 
 class MainShell extends StatelessWidget {
@@ -15,6 +16,7 @@ class MainShell extends StatelessWidget {
     EventsScreen(),
     RestaurantsScreen(),
     FeedbackScreen(),
+    RequestsScreen(),
   ];
 
   @override
@@ -60,6 +62,10 @@ class MainShell extends StatelessWidget {
                   BottomNavigationBarItem(
                     icon: Icon(Icons.rate_review_outlined),
                     label: 'Feedback',
+                  ),
+                  BottomNavigationBarItem(
+                    icon: Icon(Icons.room_service_outlined),
+                    label: 'Requests',
                   ),
                 ],
               ),

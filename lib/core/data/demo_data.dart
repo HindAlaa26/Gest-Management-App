@@ -2,6 +2,7 @@ import 'package:gest_managment_app/core/models/case_status.dart';
 import 'package:gest_managment_app/core/models/event_item.dart';
 import 'package:gest_managment_app/core/models/feedback_item.dart';
 import 'package:gest_managment_app/core/models/feedback_record.dart';
+import 'package:gest_managment_app/core/models/guest_request.dart';
 import 'package:gest_managment_app/core/models/guest_stay.dart';
 import 'package:gest_managment_app/core/models/restaurant.dart';
 
@@ -151,5 +152,72 @@ final Map<String, List<FeedbackRecord>> demoFeedbackByRoom = {
   '412': const <FeedbackRecord>[],
   '218': const <FeedbackRecord>[],
 };
+
+const List<CatalogueItem> demoCatalogue = [
+  CatalogueItem(
+    id: 'wat-1',
+    vendorType: VendorType.water,
+    nameEn: 'Bottled water 0.5L',
+    nameAr: 'مياه معبأة ٠٫٥ لتر',
+    price: 0,
+    chargeable: false,
+  ),
+  CatalogueItem(
+    id: 'wat-2',
+    vendorType: VendorType.water,
+    nameEn: 'Sparkling water',
+    nameAr: 'مياه غازية',
+    price: 20,
+    chargeable: true,
+  ),
+  CatalogueItem(
+    id: 'drk-1',
+    vendorType: VendorType.drinks,
+    nameEn: 'Soft drink',
+    nameAr: 'مشروب غازي',
+    price: 30,
+    chargeable: true,
+  ),
+  CatalogueItem(
+    id: 'drk-2',
+    vendorType: VendorType.drinks,
+    nameEn: 'Tea',
+    nameAr: 'شاي',
+    price: 0,
+    chargeable: false,
+  ),
+  CatalogueItem(
+    id: 'cln-1',
+    vendorType: VendorType.cleaning,
+    nameEn: 'Extra towels',
+    nameAr: 'مناشف إضافية',
+    price: 0,
+    chargeable: false,
+  ),
+  CatalogueItem(
+    id: 'cln-2',
+    vendorType: VendorType.cleaning,
+    nameEn: 'Room cleaning now',
+    nameAr: 'تنظيف الغرفة الآن',
+    price: 0,
+    chargeable: false,
+  ),
+  CatalogueItem(
+    id: 'mnt-1',
+    vendorType: VendorType.maintenance,
+    nameEn: 'AC not cooling',
+    nameAr: 'التكييف لا يبرّد',
+    price: 0,
+    chargeable: false,
+  ),
+  CatalogueItem(
+    id: 'oth-1',
+    vendorType: VendorType.other,
+    nameEn: 'Iron',
+    nameAr: 'مكواة',
+    price: 0,
+    chargeable: false,
+  ),
+];
 
 const String demoHotelName = 'Grand Palm Hotel';
