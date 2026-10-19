@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:gest_managment_app/core/data/demo_data.dart';
 import 'package:gest_managment_app/core/network/api_service.dart';
 import 'package:gest_managment_app/core/theme/theme.dart';
-import 'package:gest_managment_app/core/widgets/app_logo.dart';
 import 'package:gest_managment_app/core/widgets/custom_text_field.dart';
 import 'package:gest_managment_app/core/widgets/loading_button.dart';
 import 'package:gest_managment_app/features/shell/main_shell.dart';
@@ -94,9 +93,7 @@ class _SignInScreenState extends State<SignInScreen> {
                 child: IntrinsicHeight(
                   child: Column(
                     children: [
-                      const SizedBox(height: 16),
-                      Center(child: AppLogo(height: 64, onDark: true)),
-                      const SizedBox(height: 16),
+                      const SizedBox(height: 46),
                       Text(
                         demoHotelName,
                         style: Theme.of(context).textTheme.headlineMedium?.copyWith(
@@ -124,7 +121,7 @@ class _SignInScreenState extends State<SignInScreen> {
                           Container(width: 62, height: 1, color: AppColors.gold),
                         ],
                       ),
-                      const SizedBox(height: 26),
+                      const SizedBox(height: 30),
                       Expanded(
                         child: Container(
                           width: double.infinity,

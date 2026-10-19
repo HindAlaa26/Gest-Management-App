@@ -2,10 +2,9 @@
 import 'package:flutter/material.dart';
 
 import 'package:gest_managment_app/core/theme/theme.dart';
-import 'package:gest_managment_app/features/auth/sign_in_screen.dart';
+import 'package:gest_managment_app/features/splash/splash_screen.dart';
 
 void main() {
-  
    // DevicePreview.enable();
   runApp(const MyApp());
 }
@@ -19,7 +18,7 @@ class MyApp extends StatelessWidget {
       title: 'Gest Management App',
       debugShowCheckedModeBanner: false,
       theme: appTheme(),
-      home: const SignInScreen(),
+      home: const SplashScreen(),
     );
   }
 }

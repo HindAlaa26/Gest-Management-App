@@ -73,6 +73,12 @@ String formatFullDate(DateTime d) {
   return '${fullWeekdayNames[d.weekday - 1]}, ${d.day} ${monthNames[d.month]}';
 }
 
+String formatDateTime(DateTime d) {
+  final hours = d.hour.toString().padLeft(2, '0');
+  final minutes = d.minute.toString().padLeft(2, '0');
+  return '${d.day} ${shortMonthNames[d.month]}, $hours:$minutes';
+}
+
 String dayTitle(DateTime d) {
   final today = DateTime.now();
   final tomorrow = today.add(const Duration(days: 1));

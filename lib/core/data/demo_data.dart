@@ -1,4 +1,7 @@
+import 'package:gest_managment_app/core/models/case_status.dart';
 import 'package:gest_managment_app/core/models/event_item.dart';
+import 'package:gest_managment_app/core/models/feedback_item.dart';
+import 'package:gest_managment_app/core/models/feedback_record.dart';
 import 'package:gest_managment_app/core/models/guest_stay.dart';
 import 'package:gest_managment_app/core/models/restaurant.dart';
 
@@ -117,5 +120,36 @@ final List<Restaurant> demoRestaurants = [
     dinner: const MealHours(open: '19:00', close: '23:00'),
   ),
 ];
+
+final Map<String, List<FeedbackRecord>> demoFeedbackByRoom = {
+  '305': [
+    FeedbackRecord(
+      reference: 'GMS-1038',
+      type: FeedbackType.complaint,
+      category: FeedbackCategory.room,
+      message: 'The air conditioner in my room is not cooling properly.',
+      createdAt: _now.subtract(const Duration(days: 2)),
+      status: CaseStatus.inProgress,
+    ),
+    FeedbackRecord(
+      reference: 'GMS-1031',
+      type: FeedbackType.complaint,
+      category: FeedbackCategory.food,
+      message: 'My breakfast order arrived cold.',
+      createdAt: _now.subtract(const Duration(days: 4)),
+      status: CaseStatus.resolved,
+    ),
+    FeedbackRecord(
+      reference: 'GMS-1027',
+      type: FeedbackType.feedback,
+      category: FeedbackCategory.staff,
+      message: 'The front desk team was very helpful during check-in.',
+      createdAt: _now.subtract(const Duration(days: 5)),
+      status: CaseStatus.closed,
+    ),
+  ],
+  '412': const <FeedbackRecord>[],
+  '218': const <FeedbackRecord>[],
+};
 
 const String demoHotelName = 'Grand Palm Hotel';
