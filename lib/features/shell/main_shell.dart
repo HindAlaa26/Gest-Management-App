@@ -3,10 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:gest_managment_app/core/theme/theme.dart';
 import 'package:gest_managment_app/core/utils/app_nav.dart';
 import 'package:gest_managment_app/features/events/events_screen.dart';
-import 'package:gest_managment_app/features/feedback/feedback_screen.dart';
 import 'package:gest_managment_app/features/home/home_screen.dart';
-import 'package:gest_managment_app/features/messages/messages_screen.dart';
-import 'package:gest_managment_app/features/requests/requests_screen.dart';
+import 'package:gest_managment_app/features/more/more_screen.dart';
 import 'package:gest_managment_app/features/restaurants/restaurants_screen.dart';
 
 class MainShell extends StatelessWidget {
@@ -16,9 +14,7 @@ class MainShell extends StatelessWidget {
     HomeScreen(),
     EventsScreen(),
     RestaurantsScreen(),
-    FeedbackScreen(),
-    RequestsScreen(),
-    MessagesScreen(),
+    MoreScreen(),
   ];
 
   @override
@@ -63,16 +59,8 @@ class MainShell extends StatelessWidget {
                     label: 'Dining',
                   ),
                   BottomNavigationBarItem(
-                    icon: Icon(Icons.rate_review_outlined),
-                    label: 'Feedback',
-                  ),
-                  BottomNavigationBarItem(
-                    icon: Icon(Icons.room_service_outlined),
-                    label: 'Requests',
-                  ),
-                  BottomNavigationBarItem(
-                    icon: Icon(Icons.chat_bubble_outline),
-                    label: 'Messages',
+                    icon: Icon(Icons.more_horiz),
+                    label: 'More',
                   ),
                 ],
               ),

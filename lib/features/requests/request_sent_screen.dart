@@ -36,7 +36,7 @@ class _RequestSentScreenState extends State<RequestSentScreen> {
     navigator.popUntil((route) => route.isFirst);
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      AppNav.tab.value = 4;
+      AppNav.tab.value = 3;
       navigator.push(
         MaterialPageRoute(
           builder: (_) => RequestDetailsScreen(reference: reference),

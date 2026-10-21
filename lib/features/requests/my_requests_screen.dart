@@ -12,6 +12,7 @@ import 'package:gest_managment_app/core/widgets/loading_view.dart';
 import 'package:gest_managment_app/core/widgets/request_summary_card.dart';
 import 'package:gest_managment_app/core/widgets/segmented_toggle.dart';
 import 'package:gest_managment_app/features/requests/request_details_screen.dart';
+import 'package:gest_managment_app/features/requests/requests_screen.dart';
 
 class MyRequestsScreen extends StatefulWidget {
   const MyRequestsScreen({super.key});
@@ -68,9 +69,13 @@ class _MyRequestsScreenState extends State<MyRequestsScreen> {
   }
 
   void makeRequest() {
-    Navigator.of(context).popUntil((route) => route.isFirst);
+    final navigator = Navigator.of(context);
+    navigator.popUntil((route) => route.isFirst);
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      AppNav.tab.value = 4;
+      AppNav.tab.value = 3;
+      navigator.push(
+        MaterialPageRoute(builder: (_) => const RequestsScreen()),
+      );
     });
   }
 

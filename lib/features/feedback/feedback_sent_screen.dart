@@ -6,6 +6,7 @@ import 'package:gest_managment_app/core/widgets/gold_divider.dart';
 import 'package:gest_managment_app/core/widgets/loading_button.dart';
 import 'package:gest_managment_app/core/widgets/reference_badge.dart';
 import 'package:gest_managment_app/core/widgets/success_mark.dart';
+import 'package:gest_managment_app/features/feedback/feedback_screen.dart';
 
 class FeedbackSentScreen extends StatefulWidget {
   const FeedbackSentScreen({super.key, required this.reference});
@@ -37,11 +38,14 @@ class _FeedbackSentScreenState extends State<FeedbackSentScreen> {
     if (leaving) return;
     leaving = true;
 
-    
-    Navigator.of(context).popUntil((route) => route.isFirst);
-    
+    final navigator = Navigator.of(context);
+    navigator.popUntil((route) => route.isFirst);
+
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      AppNav.tab.value = 3; 
+      AppNav.tab.value = 3;
+      navigator.push(
+        MaterialPageRoute(builder: (_) => const FeedbackScreen()),
+      );
     });
   }
 

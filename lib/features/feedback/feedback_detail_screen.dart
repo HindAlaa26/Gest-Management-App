@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import 'package:gest_managment_app/core/models/feedback_item.dart';
 import 'package:gest_managment_app/core/models/feedback_record.dart';
 import 'package:gest_managment_app/core/theme/theme.dart';
 import 'package:gest_managment_app/core/utils/feedback_labels.dart';
@@ -29,8 +30,10 @@ class FeedbackDetailScreen extends StatelessWidget {
               children: [
                 Row(
                   children: [
-                    StatusBadge(status: record.status),
-                    const SizedBox(width: 10),
+                    if (record.type == FeedbackType.complaint) ...[
+                      StatusBadge(status: record.status),
+                      const SizedBox(width: 10),
+                    ],
                     Text(
                       record.type.label,
                       style: Theme.of(context).textTheme.titleMedium?.copyWith(

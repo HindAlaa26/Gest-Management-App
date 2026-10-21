@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import 'package:gest_managment_app/core/models/feedback_item.dart';
 import 'package:gest_managment_app/core/models/feedback_record.dart';
 import 'package:gest_managment_app/core/theme/theme.dart';
 import 'package:gest_managment_app/core/utils/feedback_labels.dart';
@@ -56,7 +57,8 @@ class FeedbackRecordCard extends StatelessWidget {
                   ],
                 ),
               ),
-              StatusBadge(status: record.status),
+              if (record.type == FeedbackType.complaint)
+                StatusBadge(status: record.status),
             ],
           ),
           const SizedBox(height: 12),

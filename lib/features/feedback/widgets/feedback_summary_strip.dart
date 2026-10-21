@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'package:gest_managment_app/core/models/case_status.dart';
+import 'package:gest_managment_app/core/models/feedback_item.dart';
 import 'package:gest_managment_app/core/models/feedback_record.dart';
 import 'package:gest_managment_app/core/theme/theme.dart';
 
@@ -13,13 +14,15 @@ class FeedbackSummaryStrip extends StatelessWidget {
   Widget build(BuildContext context) {
     final total = records.length;
     final inProgress = records.where((record) {
-      return record.status == CaseStatus.open ||
-          record.status == CaseStatus.inProgress ||
-          record.status == CaseStatus.waitingOnGuest;
+      return record.type == FeedbackType.complaint &&
+          (record.status == CaseStatus.open ||
+              record.status == CaseStatus.inProgress ||
+              record.status == CaseStatus.waitingOnGuest);
     }).length;
     final done = records.where((record) {
-      return record.status == CaseStatus.resolved ||
-          record.status == CaseStatus.closed;
+      return record.type == FeedbackType.complaint &&
+          (record.status == CaseStatus.resolved ||
+              record.status == CaseStatus.closed);
     }).length;
 
     final items = [
