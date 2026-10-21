@@ -1,4 +1,5 @@
 import 'package:gest_managment_app/core/models/case_status.dart';
+import 'package:gest_managment_app/core/models/chat_message.dart';
 import 'package:gest_managment_app/core/models/event_item.dart';
 import 'package:gest_managment_app/core/models/feedback_item.dart';
 import 'package:gest_managment_app/core/models/feedback_record.dart';
@@ -330,6 +331,48 @@ final Map<String, List<GuestRequest>> demoRequestsByRoom = {
       ],
     ),
   ],
+};
+
+final Map<String, List<ChatMessage>> demoMessagesByRoom = {
+  '305': [
+    ChatMessage(
+      id: 'msg-1',
+      text: 'Hi, could I get extra pillows?',
+      fromGuest: true,
+      sentAt: _now.subtract(const Duration(minutes: 25)),
+      status: MessageDeliveryStatus.read,
+    ),
+    ChatMessage(
+      id: 'msg-2',
+      text: 'Of course, we will send them shortly.',
+      fromGuest: false,
+      sentAt: _now.subtract(const Duration(minutes: 23)),
+      status: MessageDeliveryStatus.read,
+    ),
+    ChatMessage(
+      id: 'msg-3',
+      text: 'Thank you!',
+      fromGuest: true,
+      sentAt: _now.subtract(const Duration(minutes: 22)),
+      status: MessageDeliveryStatus.read,
+    ),
+    ChatMessage(
+      id: 'msg-4',
+      text: "You're welcome. Anything else?",
+      fromGuest: false,
+      sentAt: _now.subtract(const Duration(minutes: 21)),
+      status: MessageDeliveryStatus.read,
+    ),
+    ChatMessage(
+      id: 'msg-5',
+      text: "No, that's all.",
+      fromGuest: true,
+      sentAt: _now.subtract(const Duration(minutes: 20)),
+      status: MessageDeliveryStatus.sent,
+    ),
+  ],
+  '412': const <ChatMessage>[],
+  '218': const <ChatMessage>[],
 };
 
 const String demoHotelName = 'Grand Palm Hotel';

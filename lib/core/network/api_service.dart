@@ -2,6 +2,7 @@ import 'dart:math';
 
 import 'package:gest_managment_app/core/data/demo_data.dart';
 import 'package:gest_managment_app/core/models/case_status.dart';
+import 'package:gest_managment_app/core/models/chat_message.dart';
 import 'package:gest_managment_app/core/models/event_item.dart';
 import 'package:gest_managment_app/core/models/feedback_item.dart';
 import 'package:gest_managment_app/core/models/feedback_record.dart';
@@ -19,6 +20,43 @@ class Session {
 
 class ApiService {
   static const String baseUrl = '';
+
+  static final Map<String, List<ChatMessage>> myMessagesByRoom = {
+    for (final entry in demoMessagesByRoom.entries)
+      entry.key: List<ChatMessage>.from(entry.value),
+  };
+
+  static bool failNextMessage = false;
+
+  Future<List<ChatMessage>> getMessages() async {
+    await Future.delayed(const Duration(milliseconds: 500));
+
+    final room = Session.currentStay?.roomNumber ?? 'unknown';
+    final list = List<ChatMessage>.from(myMessagesByRoom[room] ?? const <ChatMessage>[]);
+    list.sort((a, b) => a.sentAt.compareTo(b.sentAt));
+    return list;
+  }
+
+  Future<ChatMessage> sendMessage(String text) async {
+    await Future.delayed(const Duration(milliseconds: 400));
+
+    if (failNextMessage) {
+      failNextMessage = false;
+      throw Exception('Message could not be sent');
+    }
+
+    final message = ChatMessage(
+      id: 'msg-${DateTime.now().microsecondsSinceEpoch}',
+      text: text,
+      fromGuest: true,
+      sentAt: DateTime.now(),
+      status: MessageDeliveryStatus.sent,
+    );
+
+    final room = Session.currentStay?.roomNumber ?? 'unknown';
+    myMessagesByRoom.putIfAbsent(room, () => <ChatMessage>[]).add(message);
+    return message;
+  }
   static final List<FeedbackItem> sentItems = <FeedbackItem>[];
   static final Map<String, List<FeedbackRecord>> myFeedbackByRoom = {
     for (final entry in demoFeedbackByRoom.entries)

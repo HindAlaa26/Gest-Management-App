@@ -5,6 +5,7 @@ import 'package:gest_managment_app/core/utils/app_nav.dart';
 import 'package:gest_managment_app/features/events/events_screen.dart';
 import 'package:gest_managment_app/features/feedback/feedback_screen.dart';
 import 'package:gest_managment_app/features/home/home_screen.dart';
+import 'package:gest_managment_app/features/messages/messages_screen.dart';
 import 'package:gest_managment_app/features/requests/requests_screen.dart';
 import 'package:gest_managment_app/features/restaurants/restaurants_screen.dart';
 
@@ -17,6 +18,7 @@ class MainShell extends StatelessWidget {
     RestaurantsScreen(),
     FeedbackScreen(),
     RequestsScreen(),
+    MessagesScreen(),
   ];
 
   @override
@@ -46,6 +48,7 @@ class MainShell extends StatelessWidget {
                 unselectedItemColor: AppColors.muted,
                 backgroundColor: AppColors.card,
                 type: BottomNavigationBarType.fixed,
+                selectedFontSize: 12,
                 items: const [
                   BottomNavigationBarItem(
                     icon: Icon(Icons.home_outlined),
@@ -66,6 +69,10 @@ class MainShell extends StatelessWidget {
                   BottomNavigationBarItem(
                     icon: Icon(Icons.room_service_outlined),
                     label: 'Requests',
+                  ),
+                  BottomNavigationBarItem(
+                    icon: Icon(Icons.chat_bubble_outline),
+                    label: 'Messages',
                   ),
                 ],
               ),
