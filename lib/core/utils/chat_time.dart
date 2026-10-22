@@ -1,7 +1,12 @@
+String clock12(int hour24, int minute) {
+  final period = hour24 >= 12 ? 'PM' : 'AM';
+  final hour12 = hour24 % 12 == 0 ? 12 : hour24 % 12;
+  final minuteText = minute.toString().padLeft(2, '0');
+  return '$hour12:$minuteText $period';
+}
+
 String formatClock(DateTime time) {
-  final hour = time.hour.toString().padLeft(2, '0');
-  final minute = time.minute.toString().padLeft(2, '0');
-  return '$hour:$minute';
+  return clock12(time.hour, time.minute);
 }
 
 String chatDayLabel(DateTime time) {

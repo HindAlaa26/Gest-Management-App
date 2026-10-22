@@ -1,4 +1,5 @@
 import 'package:gest_managment_app/core/models/event_item.dart';
+import 'package:gest_managment_app/core/utils/chat_time.dart';
 import 'package:gest_managment_app/core/models/guest_stay.dart';
 import 'package:gest_managment_app/core/models/restaurant.dart';
 
@@ -74,9 +75,7 @@ String formatFullDate(DateTime d) {
 }
 
 String formatDateTime(DateTime d) {
-  final hours = d.hour.toString().padLeft(2, '0');
-  final minutes = d.minute.toString().padLeft(2, '0');
-  return '${d.day} ${shortMonthNames[d.month]}, $hours:$minutes';
+  return '${d.day} ${shortMonthNames[d.month]}, ${clock12(d.hour, d.minute)}';
 }
 
 String dayTitle(DateTime d) {
@@ -114,11 +113,13 @@ bool isSameDay(DateTime a, DateTime b) {
 }
 
 String timeFromMinutes(int totalMinutes) {
-  final hour = totalMinutes ~/ 60;
-  final minute = totalMinutes % 60;
-  final hourText = hour.toString().padLeft(2, '0');
-  final minuteText = minute.toString().padLeft(2, '0');
-  return '$hourText:$minuteText';
+  return clock12(totalMinutes ~/ 60, totalMinutes % 60);
+}
+
+/// Turns a stored 'HH:mm' string (e.g. '18:00') into 12-hour text ('6:00 PM').
+String time12(String hhmm) {
+  final total = minutesOf(hhmm);
+  return clock12(total ~/ 60, total % 60);
 }
 
 EventItem? nextEvent(List<EventItem> events) {

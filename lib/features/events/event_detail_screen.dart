@@ -83,7 +83,7 @@ class EventDetailScreen extends StatelessWidget {
                     const SizedBox(height: 18),
                     InfoRow(
                       icon: Icons.access_time,
-                      text: '${event.startTime} – ${event.endTime}',
+                      text: '${time12(event.startTime)} – ${time12(event.endTime)}',
                       label: 'Time',
                     ),
                     const SizedBox(height: 18),

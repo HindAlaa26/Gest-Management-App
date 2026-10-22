@@ -330,10 +330,10 @@ class _HomeScreenState extends State<HomeScreen> {
         event.date.day == now.day;
 
     if (isToday) {
-      return '${event.startTime} – ${event.endTime}';
+      return '${time12(event.startTime)} – ${time12(event.endTime)}';
     }
 
-    return '${formatDay(event.date)} · ${event.startTime} – ${event.endTime}';
+    return '${formatDay(event.date)} · ${time12(event.startTime)} – ${time12(event.endTime)}';
   }
 
   Widget buildRestaurantsSection(List<Restaurant> openRestaurants) {

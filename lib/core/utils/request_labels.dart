@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'package:gest_managment_app/core/models/guest_request.dart';
+import 'package:gest_managment_app/core/utils/chat_time.dart';
 
 extension VendorTypeLabels on VendorType {
   String get label {
@@ -92,8 +93,7 @@ String formatRequestTime(DateTime time) {
   final now = DateTime.now();
   final today = DateTime(now.year, now.month, now.day);
   final day = DateTime(time.year, time.month, time.day);
-  final clock =
-      '${time.hour.toString().padLeft(2, '0')}:${time.minute.toString().padLeft(2, '0')}';
+  final clock = clock12(time.hour, time.minute);
   final daysAgo = today.difference(day).inDays;
 
   if (daysAgo == 0) return 'Today, $clock';

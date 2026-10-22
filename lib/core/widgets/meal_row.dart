@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import 'package:gest_managment_app/core/models/restaurant.dart';
 import 'package:gest_managment_app/core/theme/theme.dart';
+import 'package:gest_managment_app/core/utils/helpers.dart';
 
 class MealRow extends StatelessWidget {
   const MealRow({
@@ -18,7 +19,8 @@ class MealRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isClosed = hours.isClosed;
-    final timeText = isClosed ? 'Closed' : '${hours.open} – ${hours.close}';
+    final timeText =
+        isClosed ? 'Closed' : '${time12(hours.open!)} – ${time12(hours.close!)}';
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
