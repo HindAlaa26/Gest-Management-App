@@ -23,9 +23,8 @@ class EventCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final timeText = showDate
-        ? '${formatDay(event.date)} · ${event.startTime} – ${event.endTime}'
-        : '${event.startTime} – ${event.endTime}';
+    final range = '${time12(event.startTime)} – ${time12(event.endTime)}';
+    final timeText = showDate ? '${formatDay(event.date)} · $range' : range;
 
     return RoyalCard(
       onTap: onTap,
