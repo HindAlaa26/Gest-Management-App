@@ -12,6 +12,7 @@ import 'package:gest_managment_app/core/widgets/error_retry_card.dart';
 import 'package:gest_managment_app/core/widgets/event_card.dart';
 import 'package:gest_managment_app/core/widgets/loading_view.dart';
 import 'package:gest_managment_app/core/widgets/logo_mark.dart';
+import 'package:gest_managment_app/core/widgets/notification_bell.dart';
 import 'package:gest_managment_app/core/widgets/restaurant_card.dart';
 import 'package:gest_managment_app/core/widgets/section_label.dart';
 import 'package:gest_managment_app/features/auth/sign_in_screen.dart';
@@ -146,6 +147,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                 ),
                 actions: [
+                  const NotificationBell(),
                     Padding(
                       padding: const EdgeInsets.all(8.0),
                       child: PopupMenuButton<String>(

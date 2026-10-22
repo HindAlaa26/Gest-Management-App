@@ -1,6 +1,7 @@
 import 'dart:math';
 
 import 'package:gest_managment_app/core/data/demo_data.dart';
+import 'package:gest_managment_app/core/models/app_notification.dart';
 import 'package:gest_managment_app/core/models/case_status.dart';
 import 'package:gest_managment_app/core/models/chat_message.dart';
 import 'package:gest_managment_app/core/models/event_item.dart';
@@ -20,6 +21,66 @@ class Session {
 
 class ApiService {
   static const String baseUrl = '';
+
+  static final Map<String, List<AppNotification>> myNotificationsByRoom = {
+    for (final entry in demoNotificationsByRoom.entries)
+      entry.key: List<AppNotification>.from(entry.value),
+  };
+
+  static String? lastPushToken;
+
+  Future<List<AppNotification>> getNotifications() async {
+    await Future.delayed(const Duration(milliseconds: 400));
+
+    final room = Session.currentStay?.roomNumber ?? 'unknown';
+    final list = List<AppNotification>.from(
+      myNotificationsByRoom[room] ?? const <AppNotification>[],
+    );
+    list.sort((a, b) => b.createdAt.compareTo(a.createdAt));
+    return list;
+  }
+
+  
+  Future<void> markNotificationRead(String id) async {
+    await Future.delayed(const Duration(milliseconds: 150));
+
+    final room = Session.currentStay?.roomNumber ?? 'unknown';
+    final list = myNotificationsByRoom[room];
+    if (list == null) return;
+    final index = list.indexWhere((n) => n.id == id);
+    if (index != -1) list[index] = list[index].copyWith(read: true);
+  }
+
+  Future<void> markAllNotificationsRead() async {
+    await Future.delayed(const Duration(milliseconds: 150));
+
+    final room = Session.currentStay?.roomNumber ?? 'unknown';
+    final list = myNotificationsByRoom[room];
+    if (list == null) return;
+    for (var i = 0; i < list.length; i++) {
+      list[i] = list[i].copyWith(read: true);
+    }
+  }
+
+  Future<void> deleteNotification(String id) async {
+    await Future.delayed(const Duration(milliseconds: 150));
+
+    final room = Session.currentStay?.roomNumber ?? 'unknown';
+    myNotificationsByRoom[room]?.removeWhere((n) => n.id == id);
+  }
+
+  void addNotification(AppNotification notification) {
+    final room = Session.currentStay?.roomNumber ?? 'unknown';
+    final list = myNotificationsByRoom.putIfAbsent(room, () => <AppNotification>[]);
+    if (list.any((n) => n.id == notification.id)) return;
+    list.insert(0, notification);
+  }
+
+  Future<void> registerPushToken(String token) async {
+    await Future.delayed(const Duration(milliseconds: 300));
+
+    lastPushToken = token;
+  }
 
   static final Map<String, List<ChatMessage>> myMessagesByRoom = {
     for (final entry in demoMessagesByRoom.entries)

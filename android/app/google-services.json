@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "766680077051",
+    "project_id": "gest-management-app",
+    "storage_bucket": "gest-management-app.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:766680077051:android:e238114421ba8abcf3965e",
+        "android_client_info": {
+          "package_name": "com.example.gest_managment_app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA-8H8DPtuRklR8n3Tb7e7KCVq_XCYyT2s"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

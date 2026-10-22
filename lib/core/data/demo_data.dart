@@ -1,3 +1,4 @@
+import 'package:gest_managment_app/core/models/app_notification.dart';
 import 'package:gest_managment_app/core/models/case_status.dart';
 import 'package:gest_managment_app/core/models/chat_message.dart';
 import 'package:gest_managment_app/core/models/event_item.dart';
@@ -373,6 +374,45 @@ final Map<String, List<ChatMessage>> demoMessagesByRoom = {
   ],
   '412': const <ChatMessage>[],
   '218': const <ChatMessage>[],
+};
+
+final Map<String, List<AppNotification>> demoNotificationsByRoom = {
+  '305': [
+    AppNotification(
+      id: 'ntf-1',
+      type: NotificationType.requestUpdate,
+      title: 'Request update',
+      body: 'REQ-1044 is now Assigned.',
+      createdAt: _now.subtract(const Duration(minutes: 10)),
+      targetId: 'REQ-1044',
+    ),
+    AppNotification(
+      id: 'ntf-2',
+      type: NotificationType.message,
+      title: 'New message',
+      body: 'The hotel team replied to you.',
+      createdAt: _now.subtract(const Duration(minutes: 35)),
+    ),
+    AppNotification(
+      id: 'ntf-3',
+      type: NotificationType.survey,
+      title: "We'd like your opinion",
+      body: 'Tell us about your stay. It takes one minute.',
+      createdAt: _now.subtract(const Duration(hours: 2)),
+      targetId: 'survey-1',
+    ),
+    AppNotification(
+      id: 'ntf-4',
+      type: NotificationType.requestUpdate,
+      title: 'Request update',
+      body: 'REQ-1042 is now Done.',
+      createdAt: _now.subtract(const Duration(hours: 4, minutes: 15)),
+      targetId: 'REQ-1042',
+      read: true,
+    ),
+  ],
+  '412': const <AppNotification>[],
+  '218': const <AppNotification>[],
 };
 
 const String demoHotelName = 'Grand Palm Hotel';
