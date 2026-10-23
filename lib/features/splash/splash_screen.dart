@@ -160,17 +160,7 @@ class _SplashScreenState extends State<SplashScreen>
                             child: Stack(
                               alignment: Alignment.center,
                               children: [
-                                Container(
-                                  width: 200,
-                                  height: 200,
-                                  decoration: BoxDecoration(
-                                    shape: BoxShape.circle,
-                                    border: Border.all(
-                                      color: AppColors.gold.withValues(alpha: 0.35),
-                                      width: 1,
-                                    ),
-                                  ),
-                                ),
+                               
                                 Opacity(
                                   opacity: ringOpacity,
                                   child: Transform.rotate(

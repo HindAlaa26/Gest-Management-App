@@ -15,7 +15,6 @@ class PushService {
   static RemoteMessage? _pendingOpen;
   static bool _listeningToTokenRefresh = false;
 
-  /// Call once before runApp. Never throws.
   static Future<void> init() async {
     try {
       await Firebase.initializeApp(
