@@ -15,6 +15,7 @@ import 'package:gest_managment_app/core/widgets/logo_mark.dart';
 import 'package:gest_managment_app/core/widgets/notification_bell.dart';
 import 'package:gest_managment_app/core/widgets/restaurant_card.dart';
 import 'package:gest_managment_app/core/widgets/section_label.dart';
+import 'package:gest_managment_app/core/widgets/survey_home_card.dart';
 import 'package:gest_managment_app/features/auth/sign_in_screen.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -106,6 +107,7 @@ class _HomeScreenState extends State<HomeScreen> {
             padding: const EdgeInsets.fromLTRB(20, 10, 20, 28),
             children: [
               buildWelcomeCard(stay),
+              const SurveyHomeCard(),
               if (loading)
                 const Padding(
                   padding: EdgeInsets.only(top: 20),

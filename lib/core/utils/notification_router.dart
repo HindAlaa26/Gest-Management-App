@@ -5,6 +5,7 @@ import 'package:gest_managment_app/features/messages/messages_screen.dart';
 import 'package:gest_managment_app/features/notifications/notifications_screen.dart';
 import 'package:gest_managment_app/features/requests/my_requests_screen.dart';
 import 'package:gest_managment_app/features/requests/request_details_screen.dart';
+import 'package:gest_managment_app/features/surveys/surveys_screen.dart';
 
 class NotificationRouter {
   static final GlobalKey<NavigatorState> navigatorKey =
@@ -36,9 +37,10 @@ class NotificationRouter {
         );
         break;
       case NotificationType.survey:
-        // TASK 32: open the survey screen here.
-        messengerKey.currentState?.showSnackBar(
-          const SnackBar(content: Text('The survey screen is coming soon')),
+        await nav.push(
+          MaterialPageRoute(
+            builder: (_) => SurveysScreen(openSurveyId: targetId),
+          ),
         );
         break;
       case NotificationType.general:

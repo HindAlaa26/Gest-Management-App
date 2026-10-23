@@ -10,12 +10,14 @@ class MoreTile extends StatelessWidget {
     required this.title,
     required this.subtitle,
     required this.onTap,
+    this.badgeCount = 0,
   });
 
   final IconData icon;
   final String title;
   final String subtitle;
   final VoidCallback onTap;
+  final int badgeCount;
 
   @override
   Widget build(BuildContext context) {
@@ -28,12 +30,18 @@ class MoreTile extends StatelessWidget {
         children: [
           Container(
             width: 52,
+            alignment: Alignment.center,
             height: 52,
             decoration: const BoxDecoration(
               shape: BoxShape.circle,
               color: AppColors.tealSoft,
             ),
-            child: Icon(icon, color: AppColors.teal, size: 26),
+            child: Badge(
+              label: Text('$badgeCount'),
+              isLabelVisible: badgeCount > 0,
+              backgroundColor: AppColors.error,
+              child: Icon(icon, color: AppColors.teal, size: 26),
+            ),
           ),
           const SizedBox(width: 14),
           Expanded(

@@ -2,10 +2,12 @@ import 'package:flutter/material.dart';
 
 import 'package:gest_managment_app/core/widgets/gold_divider.dart';
 import 'package:gest_managment_app/core/widgets/more_tile.dart';
+import 'package:gest_managment_app/core/utils/survey_center.dart';
 import 'package:gest_managment_app/core/widgets/section_label.dart';
 import 'package:gest_managment_app/features/feedback/feedback_screen.dart';
 import 'package:gest_managment_app/features/messages/messages_screen.dart';
 import 'package:gest_managment_app/features/requests/requests_screen.dart';
+import 'package:gest_managment_app/features/surveys/surveys_screen.dart';
 
 class MoreScreen extends StatelessWidget {
   const MoreScreen({super.key});
@@ -45,6 +47,17 @@ class MoreScreen extends StatelessWidget {
               title: 'Feedback',
               subtitle: 'Share feedback or make a complaint',
               onTap: () => open(context, const FeedbackScreen()),
+            ),
+            const SizedBox(height: 14),
+            ValueListenableBuilder<int>(
+              valueListenable: SurveyCenter.waitingCount,
+              builder: (context, count, _) => MoreTile(
+                icon: Icons.poll_outlined,
+                title: 'Surveys',
+                subtitle: 'Tell us how we did',
+                badgeCount: count,
+                onTap: () => open(context, const SurveysScreen()),
+              ),
             ),
           ],
         ),

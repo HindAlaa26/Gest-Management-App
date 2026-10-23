@@ -75,6 +75,7 @@ class PushService {
 
   static AppNotification _toNotification(RemoteMessage message) {
     final data = message.data;
+    debugPrint('PUSH data: $data');
     final NotificationType type;
     switch (data['type']) {
       case 'request':

@@ -7,6 +7,7 @@ import 'package:gest_managment_app/core/models/feedback_record.dart';
 import 'package:gest_managment_app/core/models/guest_request.dart';
 import 'package:gest_managment_app/core/models/guest_stay.dart';
 import 'package:gest_managment_app/core/models/restaurant.dart';
+import 'package:gest_managment_app/core/models/survey.dart';
 
 final DateTime _now = DateTime.now();
 
@@ -413,6 +414,71 @@ final Map<String, List<AppNotification>> demoNotificationsByRoom = {
   ],
   '412': const <AppNotification>[],
   '218': const <AppNotification>[],
+};
+
+final Map<String, List<Survey>> demoSurveysByRoom = {
+  '305': [
+    Survey(
+      id: 'survey-1',
+      title: 'How was your stay?',
+      contextLabel: 'After your check-out',
+      receivedAt: _now.subtract(const Duration(hours: 2)),
+      questions: const [
+        SurveyQuestion(
+          id: 'q1',
+          type: SurveyQuestionType.csat,
+          text: 'How satisfied were you with your stay?',
+        ),
+        SurveyQuestion(
+          id: 'q2',
+          type: SurveyQuestionType.nps,
+          text:
+              'How likely are you to recommend Grand Palm Hotel to a friend or colleague?',
+        ),
+        SurveyQuestion(
+          id: 'q3',
+          type: SurveyQuestionType.comment,
+          text: 'Anything else you would like to tell us?',
+        ),
+      ],
+    ),
+    Survey(
+      id: 'survey-2',
+      title: 'How was our service?',
+      contextLabel: 'About request REQ-1042',
+      receivedAt: _now.subtract(const Duration(hours: 4)),
+      questions: const [
+        SurveyQuestion(
+          id: 'q1',
+          type: SurveyQuestionType.csat,
+          text: 'How satisfied are you with how we handled your request?',
+        ),
+        SurveyQuestion(
+          id: 'q2',
+          type: SurveyQuestionType.comment,
+          text: 'Anything else you would like to tell us?',
+        ),
+      ],
+    ),
+    Survey(
+      id: 'survey-0',
+      title: 'How was our service?',
+      contextLabel: 'About request REQ-1038',
+      receivedAt: _now.subtract(const Duration(days: 3)),
+      status: SurveyStatus.answered,
+      answeredAt: _now.subtract(const Duration(days: 2, hours: 20)),
+      answers: const [SurveyAnswer(questionId: 'q1', rating: 4)],
+      questions: const [
+        SurveyQuestion(
+          id: 'q1',
+          type: SurveyQuestionType.csat,
+          text: 'How satisfied are you with how we handled your request?',
+        ),
+      ],
+    ),
+  ],
+  '412': const <Survey>[],
+  '218': const <Survey>[],
 };
 
 const String demoHotelName = 'Grand Palm Hotel';

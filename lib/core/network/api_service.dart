@@ -2,6 +2,7 @@ import 'dart:math';
 
 import 'package:gest_managment_app/core/data/demo_data.dart';
 import 'package:gest_managment_app/core/models/app_notification.dart';
+import 'package:gest_managment_app/core/models/survey.dart';
 import 'package:gest_managment_app/core/models/case_status.dart';
 import 'package:gest_managment_app/core/models/chat_message.dart';
 import 'package:gest_managment_app/core/models/event_item.dart';
@@ -28,6 +29,41 @@ class ApiService {
   };
 
   static String? lastPushToken;
+
+  static final Map<String, List<Survey>> mySurveysByRoom = {
+    for (final entry in demoSurveysByRoom.entries)
+      entry.key: List<Survey>.from(entry.value),
+  };
+
+  static bool failNextSurveySubmit = false;
+
+   Future<List<Survey>> getSurveys() async {
+    await Future.delayed(const Duration(milliseconds: 400));
+
+    final room = Session.currentStay?.roomNumber ?? 'unknown';
+    final list = List<Survey>.from(mySurveysByRoom[room] ?? const <Survey>[]);
+    list.sort((a, b) => b.receivedAt.compareTo(a.receivedAt));
+    return list;
+  }
+
+   Future<void> submitSurvey(String id, List<SurveyAnswer> answers) async {
+    await Future.delayed(const Duration(milliseconds: 600));
+
+    if (failNextSurveySubmit) {
+      failNextSurveySubmit = false;
+      throw Exception('Could not send answers');
+    }
+
+    final room = Session.currentStay?.roomNumber ?? 'unknown';
+    final list = mySurveysByRoom[room];
+    final index = list?.indexWhere((s) => s.id == id) ?? -1;
+    if (list == null || index == -1) throw SurveyNotFoundException();
+    if (list[index].status == SurveyStatus.answered) {
+      throw SurveyAlreadyAnsweredException();
+    }
+
+    list[index] = list[index].copyAnswered(DateTime.now(), answers);
+  }
 
   Future<List<AppNotification>> getNotifications() async {
     await Future.delayed(const Duration(milliseconds: 400));
