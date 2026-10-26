@@ -23,6 +23,10 @@ class AppColors {
   static const Color silverDeep = Color(0xFF475569);
   static const Color softGrey = Color(0xFFEEF2F4);
 
+  // Platinum tier: charcoal "black card"
+  static const Color charcoal = Color(0xFF2A2D34);
+  static const Color charcoalDeep = Color(0xFF0F1115);
+
   // Backgrounds
   static const Color ivory = Color(0xFFF5F8F9);
   static const Color card = Color(0xFFFFFFFF);

@@ -86,7 +86,7 @@ extension LoyaltyTierStyle on LoyaltyTier {
         );
       case LoyaltyTier.platinum:
         return LoyaltyPalette(
-          gradient: const [AppColors.navySurface, AppColors.navyDeep],
+          gradient: const [AppColors.charcoal, AppColors.charcoalDeep],
           border: AppColors.gold,
           text: AppColors.card,
           subtext: AppColors.card.withValues(alpha: 0.75),
@@ -95,7 +95,7 @@ extension LoyaltyTierStyle on LoyaltyTier {
           bar: AppColors.gold,
           track: AppColors.card.withValues(alpha: 0.2),
           chipBackground: AppColors.gold,
-          chipForeground: AppColors.navyDeep,
+          chipForeground: AppColors.charcoalDeep,
           iconBackground: AppColors.gold.withValues(alpha: 0.18),
           iconForeground: AppColors.gold,
           divider: AppColors.gold.withValues(alpha: 0.4),
