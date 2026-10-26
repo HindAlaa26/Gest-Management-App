@@ -7,6 +7,7 @@ import 'package:gest_managment_app/core/utils/helpers.dart';
 import 'package:gest_managment_app/core/utils/loyalty_labels.dart';
 import 'package:gest_managment_app/core/widgets/empty_state_card.dart';
 import 'package:gest_managment_app/core/widgets/icon_circle.dart';
+import 'package:gest_managment_app/core/widgets/loyalty_card_surface.dart';
 import 'package:gest_managment_app/core/widgets/loyalty_progress_bar.dart';
 import 'package:gest_managment_app/core/widgets/loyalty_tier_chip.dart';
 import 'package:gest_managment_app/core/widgets/royal_card.dart';
@@ -17,18 +18,23 @@ class LoyaltyHistoryScreen extends StatelessWidget {
 
   final LoyaltyAccount account;
 
-  Widget noteRow(BuildContext context, IconData icon, String text) {
+  Widget noteRow(
+    BuildContext context,
+    LoyaltyPalette palette,
+    IconData icon,
+    String text,
+  ) {
     return Padding(
       padding: const EdgeInsets.only(top: 6),
       child: Row(
         children: [
-          Icon(icon, size: 16, color: AppColors.gold),
+          Icon(icon, size: 16, color: palette.label),
           const SizedBox(width: 8),
           Expanded(
             child: Text(
               text,
               style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                color: AppColors.card.withValues(alpha: 0.8),
+                color: palette.subtext,
               ),
             ),
           ),
@@ -39,13 +45,14 @@ class LoyaltyHistoryScreen extends StatelessWidget {
 
   Widget buildSummary(BuildContext context) {
     final textTheme = Theme.of(context).textTheme;
+    final palette = account.tier.palette;
     final next = account.nextTier;
     final caption = next == null
         ? "You've reached our top tier"
         : '${formatPoints(account.pointsToNext)} points to ${next.label}';
 
-    return RoyalCard(
-      dark: true,
+    return LoyaltyCardSurface(
+      tier: account.tier,
       padding: const EdgeInsets.all(20),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -56,7 +63,7 @@ class LoyaltyHistoryScreen extends StatelessWidget {
                 child: Text(
                   'AVAILABLE BALANCE',
                   style: textTheme.labelSmall?.copyWith(
-                    color: AppColors.gold,
+                    color: palette.label,
                     letterSpacing: 1.2,
                     fontWeight: FontWeight.w600,
                   ),
@@ -75,14 +82,14 @@ class LoyaltyHistoryScreen extends StatelessWidget {
                 style: GoogleFonts.cormorantGaramond(
                   fontSize: 44,
                   fontWeight: FontWeight.w700,
-                  color: AppColors.card,
+                  color: palette.text,
                   height: 1,
                 ),
               ),
               const SizedBox(width: 8),
               Text(
                 'pts',
-                style: textTheme.bodyMedium?.copyWith(color: AppColors.gold),
+                style: textTheme.bodyMedium?.copyWith(color: palette.label),
               ),
             ],
           ),
@@ -90,26 +97,26 @@ class LoyaltyHistoryScreen extends StatelessWidget {
             const SizedBox(height: 14),
             LoyaltyProgressBar(
               progress: account.progress,
-              color: AppColors.gold,
-              trackColor: AppColors.card.withValues(alpha: 0.18),
+              color: palette.bar,
+              trackColor: palette.track,
             ),
           ],
           const SizedBox(height: 10),
           Text(
             caption,
-            style: textTheme.bodySmall?.copyWith(
-              color: AppColors.card.withValues(alpha: 0.85),
-            ),
+            style: textTheme.bodySmall?.copyWith(color: palette.subtext),
           ),
           const SizedBox(height: 12),
-          const Divider(),
+          Divider(color: palette.divider),
           noteRow(
             context,
+            palette,
             Icons.schedule,
             'Points expire 24 months after they are earned',
           ),
           noteRow(
             context,
+            palette,
             Icons.workspace_premium_outlined,
             'Your tier is based on points earned in the last 12 months',
           ),

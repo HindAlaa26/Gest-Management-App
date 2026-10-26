@@ -10,19 +10,21 @@ class LoyaltyTierChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final palette = tier.palette;
+
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
       decoration: BoxDecoration(
-        color: tier.chipBackground,
+        color: palette.chipBackground,
         borderRadius: BorderRadius.circular(20),
         border: Border.all(
-          color: tier.chipForeground.withValues(alpha: 0.4),
+          color: palette.chipForeground.withValues(alpha: 0.4),
         ),
       ),
       child: Text(
         tier.label.toUpperCase(),
         style: Theme.of(context).textTheme.labelSmall?.copyWith(
-          color: tier.chipForeground,
+          color: palette.chipForeground,
           fontWeight: FontWeight.w700,
           letterSpacing: 1,
         ),

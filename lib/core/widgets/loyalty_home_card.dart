@@ -3,12 +3,11 @@ import 'package:google_fonts/google_fonts.dart';
 
 import 'package:gest_managment_app/core/models/loyalty.dart';
 import 'package:gest_managment_app/core/network/api_service.dart';
-import 'package:gest_managment_app/core/theme/theme.dart';
 import 'package:gest_managment_app/core/utils/loyalty_labels.dart';
 import 'package:gest_managment_app/core/widgets/icon_circle.dart';
+import 'package:gest_managment_app/core/widgets/loyalty_card_surface.dart';
 import 'package:gest_managment_app/core/widgets/loyalty_progress_bar.dart';
 import 'package:gest_managment_app/core/widgets/loyalty_tier_chip.dart';
-import 'package:gest_managment_app/core/widgets/royal_card.dart';
 import 'package:gest_managment_app/features/loyalty/loyalty_history_screen.dart';
 
 class LoyaltyHomeCard extends StatefulWidget {
@@ -35,6 +34,7 @@ class _LoyaltyHomeCardState extends State<LoyaltyHomeCard> {
         account = result;
       });
     } catch (_) {
+      
     }
   }
 
@@ -53,6 +53,7 @@ class _LoyaltyHomeCardState extends State<LoyaltyHomeCard> {
     if (current == null) return const SizedBox.shrink();
 
     final textTheme = Theme.of(context).textTheme;
+    final palette = current.tier.palette;
     final next = current.nextTier;
     final caption = next == null
         ? "You've reached our top tier"
@@ -60,15 +61,19 @@ class _LoyaltyHomeCardState extends State<LoyaltyHomeCard> {
 
     return Padding(
       padding: const EdgeInsets.only(top: 18),
-      child: RoyalCard(
+      child: LoyaltyCardSurface(
+        tier: current.tier,
         onTap: () => openHistory(current),
-        padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Row(
               children: [
-                const IconCircle(icon: Icons.workspace_premium_outlined),
+                IconCircle(
+                  icon: Icons.workspace_premium_outlined,
+                  background: palette.iconBackground,
+                  color: palette.iconForeground,
+                ),
                 const SizedBox(width: 14),
                 Expanded(
                   child: Wrap(
@@ -79,7 +84,7 @@ class _LoyaltyHomeCardState extends State<LoyaltyHomeCard> {
                       Text(
                         'My Loyalty',
                         style: textTheme.titleMedium?.copyWith(
-                          color: AppColors.navy,
+                          color: palette.text,
                           fontWeight: FontWeight.w700,
                         ),
                       ),
@@ -87,7 +92,7 @@ class _LoyaltyHomeCardState extends State<LoyaltyHomeCard> {
                     ],
                   ),
                 ),
-                const Icon(Icons.chevron_right, color: AppColors.teal),
+                Icon(Icons.chevron_right, color: palette.accent),
               ],
             ),
             const SizedBox(height: 14),
@@ -100,7 +105,7 @@ class _LoyaltyHomeCardState extends State<LoyaltyHomeCard> {
                   style: GoogleFonts.cormorantGaramond(
                     fontSize: 36,
                     fontWeight: FontWeight.w700,
-                    color: AppColors.navy,
+                    color: palette.text,
                     height: 1,
                   ),
                 ),
@@ -108,7 +113,7 @@ class _LoyaltyHomeCardState extends State<LoyaltyHomeCard> {
                 Text(
                   'POINTS',
                   style: textTheme.labelSmall?.copyWith(
-                    color: AppColors.muted,
+                    color: palette.subtext,
                     letterSpacing: 1.2,
                     fontWeight: FontWeight.w600,
                   ),
@@ -119,7 +124,8 @@ class _LoyaltyHomeCardState extends State<LoyaltyHomeCard> {
               const SizedBox(height: 12),
               LoyaltyProgressBar(
                 progress: current.progress,
-                color: current.tier.barColor,
+                color: palette.bar,
+                trackColor: palette.track,
               ),
             ],
             const SizedBox(height: 10),
@@ -129,22 +135,18 @@ class _LoyaltyHomeCardState extends State<LoyaltyHomeCard> {
                   child: Text(
                     caption,
                     style: textTheme.bodySmall?.copyWith(
-                      color: AppColors.muted,
+                      color: palette.subtext,
                     ),
                   ),
                 ),
                 Text(
                   'View history',
                   style: textTheme.bodyMedium?.copyWith(
-                    color: AppColors.teal,
+                    color: palette.accent,
                     fontWeight: FontWeight.w600,
                   ),
                 ),
-                const Icon(
-                  Icons.chevron_right,
-                  size: 18,
-                  color: AppColors.teal,
-                ),
+                Icon(Icons.chevron_right, size: 18, color: palette.accent),
               ],
             ),
           ],

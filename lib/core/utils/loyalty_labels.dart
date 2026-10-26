@@ -17,36 +17,89 @@ String formatSignedPoints(int value) {
   return value > 0 ? '+${formatPoints(value)}' : formatPoints(value);
 }
 
+class LoyaltyPalette {
+  const LoyaltyPalette({
+    required this.gradient,
+    required this.border,
+    required this.text,
+    required this.subtext,
+    required this.label,
+    required this.accent,
+    required this.bar,
+    required this.track,
+    required this.chipBackground,
+    required this.chipForeground,
+    required this.iconBackground,
+    required this.iconForeground,
+    required this.divider,
+  });
+
+  final List<Color> gradient;
+  final Color border;
+  final Color text;
+  final Color subtext;
+  final Color label;
+  final Color accent;
+  final Color bar;
+  final Color track;
+  final Color chipBackground;
+  final Color chipForeground;
+  final Color iconBackground;
+  final Color iconForeground;
+  final Color divider;
+}
+
 extension LoyaltyTierStyle on LoyaltyTier {
-  Color get chipBackground {
+  LoyaltyPalette get palette {
     switch (this) {
       case LoyaltyTier.silver:
-        return AppColors.silverSoft;
+        return LoyaltyPalette(
+          gradient: const [AppColors.card, AppColors.silverSoft],
+          border: AppColors.silver,
+          text: AppColors.navy,
+          subtext: AppColors.silverDeep,
+          label: AppColors.silverDeep,
+          accent: AppColors.teal,
+          bar: AppColors.silver,
+          track: AppColors.silver.withValues(alpha: 0.25),
+          chipBackground: AppColors.silverDeep,
+          chipForeground: AppColors.card,
+          iconBackground: AppColors.card,
+          iconForeground: AppColors.silverDeep,
+          divider: AppColors.silver.withValues(alpha: 0.5),
+        );
       case LoyaltyTier.gold:
-        return AppColors.goldLight;
+        return LoyaltyPalette(
+          gradient: const [AppColors.card, AppColors.goldLight],
+          border: AppColors.gold,
+          text: AppColors.navy,
+          subtext: AppColors.muted,
+          label: AppColors.goldDeep,
+          accent: AppColors.teal,
+          bar: AppColors.gold,
+          track: AppColors.gold.withValues(alpha: 0.25),
+          chipBackground: AppColors.goldLight,
+          chipForeground: AppColors.goldDeep,
+          iconBackground: AppColors.goldLight,
+          iconForeground: AppColors.goldDeep,
+          divider: AppColors.gold.withValues(alpha: 0.5),
+        );
       case LoyaltyTier.platinum:
-        return AppColors.navy;
-    }
-  }
-
-  Color get chipForeground {
-    switch (this) {
-      case LoyaltyTier.silver:
-        return AppColors.silverDeep;
-      case LoyaltyTier.gold:
-        return AppColors.goldDeep;
-      case LoyaltyTier.platinum:
-        return AppColors.gold;
-    }
-  }
-
-  Color get barColor {
-    switch (this) {
-      case LoyaltyTier.silver:
-        return AppColors.silver;
-      case LoyaltyTier.gold:
-      case LoyaltyTier.platinum:
-        return AppColors.gold;
+        return LoyaltyPalette(
+          gradient: const [AppColors.navySurface, AppColors.navyDeep],
+          border: AppColors.gold,
+          text: AppColors.card,
+          subtext: AppColors.card.withValues(alpha: 0.75),
+          label: AppColors.gold,
+          accent: AppColors.gold,
+          bar: AppColors.gold,
+          track: AppColors.card.withValues(alpha: 0.2),
+          chipBackground: AppColors.gold,
+          chipForeground: AppColors.navyDeep,
+          iconBackground: AppColors.gold.withValues(alpha: 0.18),
+          iconForeground: AppColors.gold,
+          divider: AppColors.gold.withValues(alpha: 0.4),
+        );
     }
   }
 }
