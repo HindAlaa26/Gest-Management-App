@@ -6,6 +6,7 @@ import 'package:gest_managment_app/core/models/feedback_item.dart';
 import 'package:gest_managment_app/core/models/feedback_record.dart';
 import 'package:gest_managment_app/core/models/guest_request.dart';
 import 'package:gest_managment_app/core/models/guest_stay.dart';
+import 'package:gest_managment_app/core/models/loyalty.dart';
 import 'package:gest_managment_app/core/models/restaurant.dart';
 import 'package:gest_managment_app/core/models/survey.dart';
 
@@ -479,6 +480,86 @@ final Map<String, List<Survey>> demoSurveysByRoom = {
   ],
   '412': const <Survey>[],
   '218': const <Survey>[],
+};
+
+final Map<String, List<LoyaltyEntry>> demoLoyaltyByRoom = {
+  '305': [
+    LoyaltyEntry(
+      id: 'loy-1',
+      type: LoyaltyEntryType.earn,
+      points: 450,
+      reason: 'Stay · Grand Palm Hotel',
+      source: 'Stay',
+      date: _now.subtract(const Duration(days: 3)),
+    ),
+    LoyaltyEntry(
+      id: 'loy-2',
+      type: LoyaltyEntryType.earn,
+      points: 80,
+      reason: 'Room service order',
+      source: 'Dining',
+      date: _now.subtract(const Duration(days: 5)),
+    ),
+    LoyaltyEntry(
+      id: 'loy-3',
+      type: LoyaltyEntryType.redeem,
+      points: -200,
+      reason: 'Redeemed: free breakfast',
+      source: 'Dining',
+      date: _now.subtract(const Duration(days: 9)),
+    ),
+    LoyaltyEntry(
+      id: 'loy-4',
+      type: LoyaltyEntryType.earn,
+      points: 320,
+      reason: 'Spa & Wellness treatment',
+      source: 'Wellness',
+      date: _now.subtract(const Duration(days: 14)),
+    ),
+    LoyaltyEntry(
+      id: 'loy-5',
+      type: LoyaltyEntryType.adjust,
+      points: 50,
+      reason: 'Courtesy adjustment',
+      source: 'Concierge',
+      date: _now.subtract(const Duration(days: 20)),
+    ),
+    LoyaltyEntry(
+      id: 'loy-6',
+      type: LoyaltyEntryType.expire,
+      points: -100,
+      reason: 'Points expired',
+      source: 'Expiry',
+      date: _now.subtract(const Duration(days: 35)),
+    ),
+    LoyaltyEntry(
+      id: 'loy-7',
+      type: LoyaltyEntryType.redeem,
+      points: -150,
+      reason: 'Redeemed: late check-out',
+      source: 'Front desk',
+      date: _now.subtract(const Duration(days: 50)),
+    ),
+    LoyaltyEntry(
+      id: 'loy-8',
+      type: LoyaltyEntryType.earn,
+      points: 2000,
+      reason: 'Stay · Grand Palm Hotel',
+      source: 'Stay',
+      date: _now.subtract(const Duration(days: 150)),
+    ),
+  ],
+  '412': const <LoyaltyEntry>[],
+  '218': [
+    LoyaltyEntry(
+      id: 'loy-9',
+      type: LoyaltyEntryType.earn,
+      points: 600,
+      reason: 'Stay · Grand Palm Hotel',
+      source: 'Stay',
+      date: _now.subtract(const Duration(days: 10)),
+    ),
+  ],
 };
 
 const String demoHotelName = 'Grand Palm Hotel';

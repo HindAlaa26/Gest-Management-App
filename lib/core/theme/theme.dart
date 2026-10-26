@@ -17,6 +17,12 @@ class AppColors {
   static const Color goldDeep = Color(0xFFA9803F);
   static const Color goldLight = Color(0xFFF3E6CC);
 
+  // Silver tier and neutral soft grey
+  static const Color silver = Color(0xFF94A3B8);
+  static const Color silverSoft = Color(0xFFE2E8F0);
+  static const Color silverDeep = Color(0xFF475569);
+  static const Color softGrey = Color(0xFFEEF2F4);
+
   // Backgrounds
   static const Color ivory = Color(0xFFF5F8F9);
   static const Color card = Color(0xFFFFFFFF);

@@ -12,6 +12,7 @@ import 'package:gest_managment_app/core/widgets/error_retry_card.dart';
 import 'package:gest_managment_app/core/widgets/event_card.dart';
 import 'package:gest_managment_app/core/widgets/loading_view.dart';
 import 'package:gest_managment_app/core/widgets/logo_mark.dart';
+import 'package:gest_managment_app/core/widgets/loyalty_home_card.dart';
 import 'package:gest_managment_app/core/widgets/notification_bell.dart';
 import 'package:gest_managment_app/core/widgets/restaurant_card.dart';
 import 'package:gest_managment_app/core/widgets/section_label.dart';
@@ -107,6 +108,7 @@ class _HomeScreenState extends State<HomeScreen> {
             padding: const EdgeInsets.fromLTRB(20, 10, 20, 28),
             children: [
               buildWelcomeCard(stay),
+              const LoyaltyHomeCard(),
               const SurveyHomeCard(),
               if (loading)
                 const Padding(

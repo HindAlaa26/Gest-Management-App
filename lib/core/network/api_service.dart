@@ -10,6 +10,7 @@ import 'package:gest_managment_app/core/models/feedback_item.dart';
 import 'package:gest_managment_app/core/models/feedback_record.dart';
 import 'package:gest_managment_app/core/models/guest_request.dart';
 import 'package:gest_managment_app/core/models/guest_stay.dart';
+import 'package:gest_managment_app/core/models/loyalty.dart';
 import 'package:gest_managment_app/core/models/restaurant.dart';
 
 class Session {
@@ -63,6 +64,17 @@ class ApiService {
     }
 
     list[index] = list[index].copyAnswered(DateTime.now(), answers);
+  }
+
+  Future<LoyaltyAccount> getLoyalty() async {
+    await Future.delayed(const Duration(milliseconds: 400));
+
+    final room = Session.currentStay?.roomNumber ?? 'unknown';
+    final entries = List<LoyaltyEntry>.from(
+      demoLoyaltyByRoom[room] ?? const <LoyaltyEntry>[],
+    );
+    entries.sort((a, b) => b.date.compareTo(a.date));
+    return LoyaltyAccount(entries: entries);
   }
 
   Future<List<AppNotification>> getNotifications() async {

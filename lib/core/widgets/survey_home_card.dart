@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import 'package:gest_managment_app/core/theme/theme.dart';
 import 'package:gest_managment_app/core/utils/survey_center.dart';
+import 'package:gest_managment_app/core/widgets/icon_circle.dart';
 import 'package:gest_managment_app/core/widgets/royal_card.dart';
 import 'package:gest_managment_app/features/surveys/surveys_screen.dart';
 
@@ -46,19 +47,7 @@ class _SurveyHomeCardState extends State<SurveyHomeCard> {
             padding: const EdgeInsets.all(16),
             child: Row(
               children: [
-                Container(
-                  width: 48,
-                  height: 48,
-                  decoration: const BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: AppColors.goldLight,
-                  ),
-                  child: const Icon(
-                    Icons.poll_outlined,
-                    color: AppColors.goldDeep,
-                    size: 24,
-                  ),
-                ),
+                const IconCircle(icon: Icons.poll_outlined),
                 const SizedBox(width: 14),
                 Expanded(
                   child: Column(
