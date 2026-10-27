@@ -7,6 +7,7 @@ import 'package:gest_managment_app/core/models/feedback_record.dart';
 import 'package:gest_managment_app/core/models/guest_request.dart';
 import 'package:gest_managment_app/core/models/guest_stay.dart';
 import 'package:gest_managment_app/core/models/loyalty.dart';
+import 'package:gest_managment_app/core/models/offer.dart';
 import 'package:gest_managment_app/core/models/restaurant.dart';
 import 'package:gest_managment_app/core/models/survey.dart';
 
@@ -558,6 +559,64 @@ final Map<String, List<LoyaltyEntry>> demoLoyaltyByRoom = {
       reason: 'Stay · Grand Palm Hotel',
       source: 'Stay',
       date: _now.subtract(const Duration(days: 10)),
+    ),
+  ],
+};
+
+final Map<String, List<Offer>> demoOffersByRoom = {
+  '305': [
+    Offer(
+      id: 'offer-1',
+      title: '20% off spa treatments',
+      description:
+          'Enjoy 20% off any treatment at the Lotus Spa during your stay. Show your code at the spa reception when you book.',
+      type: OfferType.discount,
+      validUntil: _now.add(const Duration(days: 12)),
+    ),
+    Offer(
+      id: 'offer-2',
+      title: 'Free room upgrade',
+      description:
+          'Upgrade to the next room category on your next stay, subject to availability. Show your code at the front desk when you check in.',
+      type: OfferType.roomUpgrade,
+      validUntil: _now.add(const Duration(days: 30)),
+    ),
+    Offer(
+      id: 'offer-3',
+      title: '500 bonus points',
+      description:
+          'Show your code at the front desk and we will add 500 bonus points to your loyalty account.',
+      type: OfferType.bonusPoints,
+      validUntil: _now.add(const Duration(days: 20)),
+      opened: true,
+    ),
+    Offer(
+      id: 'offer-4',
+      title: 'Complimentary dessert',
+      description: 'A dessert of your choice with any dinner at our restaurants.',
+      type: OfferType.freeItem,
+      validUntil: _now.add(const Duration(days: 5)),
+      opened: true,
+      redeemedAt: _now.subtract(const Duration(days: 9)),
+    ),
+    Offer(
+      id: 'offer-5',
+      title: 'Welcome drink',
+      description: 'A welcome drink at the lobby bar on arrival.',
+      type: OfferType.freeItem,
+      validUntil: _now.subtract(const Duration(days: 12)),
+      opened: true,
+    ),
+  ],
+  '412': const <Offer>[],
+  '218': [
+    Offer(
+      id: 'offer-6',
+      title: 'Free breakfast for two',
+      description:
+          'Enjoy breakfast for two at The Veranda during your stay. Show your code to the restaurant host.',
+      type: OfferType.freeItem,
+      validUntil: _now.add(const Duration(days: 7)),
     ),
   ],
 };

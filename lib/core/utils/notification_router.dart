@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:gest_managment_app/core/models/app_notification.dart';
 import 'package:gest_managment_app/features/messages/messages_screen.dart';
 import 'package:gest_managment_app/features/notifications/notifications_screen.dart';
+import 'package:gest_managment_app/features/offers/offers_screen.dart';
 import 'package:gest_managment_app/features/requests/my_requests_screen.dart';
 import 'package:gest_managment_app/features/requests/request_details_screen.dart';
 import 'package:gest_managment_app/features/surveys/surveys_screen.dart';
@@ -40,6 +41,13 @@ class NotificationRouter {
         await nav.push(
           MaterialPageRoute(
             builder: (_) => SurveysScreen(openSurveyId: targetId),
+          ),
+        );
+        break;
+      case NotificationType.offer:
+        await nav.push(
+          MaterialPageRoute(
+            builder: (_) => OffersScreen(openOfferId: targetId),
           ),
         );
         break;

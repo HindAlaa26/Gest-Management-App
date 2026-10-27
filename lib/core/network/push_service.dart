@@ -8,6 +8,7 @@ import 'package:gest_managment_app/core/models/app_notification.dart';
 import 'package:gest_managment_app/core/network/api_service.dart';
 import 'package:gest_managment_app/core/utils/notification_center.dart';
 import 'package:gest_managment_app/core/utils/notification_router.dart';
+import 'package:gest_managment_app/core/utils/offer_center.dart';
 import 'package:gest_managment_app/firebase_options.dart';
 
 class PushService {
@@ -86,6 +87,9 @@ class PushService {
       case 'survey':
         type = NotificationType.survey;
         break;
+      case 'offer':
+        type = NotificationType.offer;
+        break;
       default:
         type = NotificationType.general;
     }
@@ -111,6 +115,8 @@ class PushService {
     SystemSound.play(SystemSoundType.alert);
     HapticFeedback.mediumImpact();
     NotificationCenter.refresh();
+    // BACKEND LATER: the new offer comes from the API, so the counts update here.
+    OfferCenter.refresh();
 
     NotificationRouter.messengerKey.currentState?.showSnackBar(
       SnackBar(
@@ -136,7 +142,6 @@ class PushService {
     debugPrint('PUSH [opened] id=${message.messageId} data=${message.data}');
     final notification = _toNotification(message);
 
-    // BACKEND LATER: the list will come from the API; remove this local insert then.
     ApiService().addNotification(notification.copyWith(read: true));
     NotificationCenter.refresh();
 

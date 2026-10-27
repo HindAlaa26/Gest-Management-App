@@ -1,4 +1,4 @@
-enum NotificationType { requestUpdate, message, survey, general }
+enum NotificationType { requestUpdate, message, survey, offer, general }
 
 class AppNotification {
   const AppNotification({

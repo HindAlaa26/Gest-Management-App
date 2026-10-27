@@ -11,6 +11,7 @@ import 'package:gest_managment_app/core/models/feedback_record.dart';
 import 'package:gest_managment_app/core/models/guest_request.dart';
 import 'package:gest_managment_app/core/models/guest_stay.dart';
 import 'package:gest_managment_app/core/models/loyalty.dart';
+import 'package:gest_managment_app/core/models/offer.dart';
 import 'package:gest_managment_app/core/models/restaurant.dart';
 
 class Session {
@@ -38,7 +39,12 @@ class ApiService {
 
   static bool failNextSurveySubmit = false;
 
-   Future<List<Survey>> getSurveys() async {
+  static final Map<String, List<Offer>> myOffersByRoom = {
+    for (final entry in demoOffersByRoom.entries)
+      entry.key: List<Offer>.from(entry.value),
+  };
+
+  Future<List<Survey>> getSurveys() async {
     await Future.delayed(const Duration(milliseconds: 400));
 
     final room = Session.currentStay?.roomNumber ?? 'unknown';
@@ -64,6 +70,48 @@ class ApiService {
     }
 
     list[index] = list[index].copyAnswered(DateTime.now(), answers);
+  }
+
+  Future<List<Offer>> getOffers() async {
+    await Future.delayed(const Duration(milliseconds: 400));
+
+    final room = Session.currentStay?.roomNumber ?? 'unknown';
+    final list = List<Offer>.from(myOffersByRoom[room] ?? const <Offer>[]);
+    list.sort((a, b) => a.validUntil.compareTo(b.validUntil));
+    return list;
+  }
+
+  Future<void> markOfferOpened(String id) async {
+    final room = Session.currentStay?.roomNumber ?? 'unknown';
+    final list = myOffersByRoom[room];
+    final index = list?.indexWhere((o) => o.id == id) ?? -1;
+    if (list == null || index == -1) throw OfferNotFoundException();
+
+    list[index] = list[index].copyOpened();
+  }
+
+  Future<String> useOffer(String id) async {
+    await Future.delayed(const Duration(milliseconds: 500));
+
+    final room = Session.currentStay?.roomNumber ?? 'unknown';
+    final list = myOffersByRoom[room];
+    final index = list?.indexWhere((o) => o.id == id) ?? -1;
+    if (list == null || index == -1) throw OfferNotFoundException();
+    if (!list[index].isAvailable) throw OfferNotAvailableException();
+
+    list[index] = list[index].copyOpened();
+    return _offerCode(id);
+  }
+
+  static String _offerCode(String id) {
+    const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+    final seed = id.codeUnits.fold<int>(
+      7,
+      (sum, unit) => (sum * 31 + unit) % 1000003,
+    );
+    final random = Random(seed);
+    final letters = List.generate(5, (_) => chars[random.nextInt(chars.length)]);
+    return 'GMS-${letters.join()}';
   }
 
   Future<LoyaltyAccount> getLoyalty() async {

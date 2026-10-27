@@ -7,13 +7,16 @@ import 'package:gest_managment_app/core/models/guest_stay.dart';
 import 'package:gest_managment_app/core/models/restaurant.dart';
 import 'package:gest_managment_app/core/network/api_service.dart';
 import 'package:gest_managment_app/core/theme/theme.dart';
-import 'package:gest_managment_app/core/utils/helpers.dart';import 'package:gest_managment_app/core/utils/app_nav.dart';import 'package:gest_managment_app/core/widgets/empty_state_card.dart';
+import 'package:gest_managment_app/core/utils/helpers.dart';
+import 'package:gest_managment_app/core/utils/app_nav.dart';
+import 'package:gest_managment_app/core/widgets/empty_state_card.dart';
 import 'package:gest_managment_app/core/widgets/error_retry_card.dart';
 import 'package:gest_managment_app/core/widgets/event_card.dart';
 import 'package:gest_managment_app/core/widgets/loading_view.dart';
 import 'package:gest_managment_app/core/widgets/logo_mark.dart';
 import 'package:gest_managment_app/core/widgets/loyalty_home_card.dart';
 import 'package:gest_managment_app/core/widgets/notification_bell.dart';
+import 'package:gest_managment_app/core/widgets/offer_home_card.dart';
 import 'package:gest_managment_app/core/widgets/restaurant_card.dart';
 import 'package:gest_managment_app/core/widgets/section_label.dart';
 import 'package:gest_managment_app/core/widgets/survey_home_card.dart';
@@ -109,6 +112,7 @@ class _HomeScreenState extends State<HomeScreen> {
             children: [
               buildWelcomeCard(stay),
               const LoyaltyHomeCard(),
+              const OfferHomeCard(),
               const SurveyHomeCard(),
               if (loading)
                 const Padding(

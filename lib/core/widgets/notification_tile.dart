@@ -23,6 +23,8 @@ class NotificationTile extends StatelessWidget {
         return Icons.chat_bubble_outline;
       case NotificationType.survey:
         return Icons.poll_outlined;
+      case NotificationType.offer:
+        return Icons.local_offer_outlined;
       case NotificationType.general:
         return Icons.notifications_none_outlined;
     }
