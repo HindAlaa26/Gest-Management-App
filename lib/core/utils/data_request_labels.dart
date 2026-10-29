@@ -38,7 +38,6 @@ extension DataRequestStatusLabels on DataRequestStatus {
   }
 }
 
-/// The sentence under a request: what is happening and what to expect.
 String dataRequestNote(DataRequest request) {
   if (request.status == DataRequestStatus.failed) {
     return request.type == DataRequestType.export

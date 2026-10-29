@@ -12,7 +12,6 @@ class DataRequestCard extends StatelessWidget {
 
   final DataRequest request;
 
-  /// Set only when the guest can still download the file.
   final VoidCallback? onCopyLink;
 
   @override

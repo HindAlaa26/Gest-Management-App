@@ -131,13 +131,11 @@ class ApiService {
     return list;
   }
 
-  /// BACKEND LATER: the API prepares a JSON file and a readable PDF and gives a link valid for 7 days.
   Future<DataRequest> requestDataExport() async {
     await Future.delayed(const Duration(milliseconds: 600));
     return _addDataRequest(DataRequestType.export);
   }
 
-  /// BACKEND LATER: the API anonymises the guest's data within 24 hours. This cannot be undone.
   Future<DataRequest> requestDataDeletion() async {
     await Future.delayed(const Duration(milliseconds: 600));
     return _addDataRequest(DataRequestType.delete);

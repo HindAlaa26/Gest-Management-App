@@ -20,7 +20,6 @@ class MoreTile extends StatelessWidget {
   final VoidCallback onTap;
   final int badgeCount;
 
-  /// Red look for actions that remove something.
   final bool destructive;
 
   @override

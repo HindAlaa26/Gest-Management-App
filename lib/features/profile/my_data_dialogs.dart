@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 
 import 'package:gest_managment_app/core/theme/theme.dart';
 
-/// Asks twice before the guest's data is deleted. Returns true only if both are confirmed.
 Future<bool> confirmDeleteMyData(BuildContext context) async {
   final first = await showDialog<bool>(
     context: context,
