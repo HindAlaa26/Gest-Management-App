@@ -21,6 +21,7 @@ import 'package:gest_managment_app/core/widgets/restaurant_card.dart';
 import 'package:gest_managment_app/core/widgets/section_label.dart';
 import 'package:gest_managment_app/core/widgets/survey_home_card.dart';
 import 'package:gest_managment_app/features/auth/sign_in_screen.dart';
+import 'package:gest_managment_app/features/profile/profile_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -165,7 +166,14 @@ class _HomeScreenState extends State<HomeScreen> {
                                       borderRadius: BorderRadius.circular(16),
                                     ),
                                     onSelected: (value) {
-                                      if (value == 'sign_out') {
+                                      if (value == 'profile') {
+                                        Navigator.push(
+                                          context,
+                                          MaterialPageRoute(
+                                            builder: (_) => const ProfileScreen(),
+                                          ),
+                                        );
+                                      } else if (value == 'sign_out') {
                                         signOut();
                                       }
                                     },
@@ -193,6 +201,19 @@ class _HomeScreenState extends State<HomeScreen> {
                           ),
                         ],
                       ),
+                                        ),
+                                      ),
+                                      const PopupMenuItem<String>(
+                                        value: 'profile',
+                                        child: Row(
+                                          children: [
+                                            Icon(
+                                              Icons.person_outline,
+                                              color: AppColors.navy,
+                                            ),
+                                            SizedBox(width: 8),
+                                            Text('My profile'),
+                                          ],
                                         ),
                                       ),
                                       const PopupMenuItem<String>(

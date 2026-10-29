@@ -5,6 +5,7 @@ import 'package:gest_managment_app/core/models/app_notification.dart';
 import 'package:gest_managment_app/core/models/survey.dart';
 import 'package:gest_managment_app/core/models/case_status.dart';
 import 'package:gest_managment_app/core/models/chat_message.dart';
+import 'package:gest_managment_app/core/models/data_request.dart';
 import 'package:gest_managment_app/core/models/event_item.dart';
 import 'package:gest_managment_app/core/models/feedback_item.dart';
 import 'package:gest_managment_app/core/models/feedback_record.dart';
@@ -38,6 +39,11 @@ class ApiService {
   };
 
   static bool failNextSurveySubmit = false;
+
+  static final Map<String, List<DataRequest>> myDataRequestsByRoom = {
+    for (final entry in demoDataRequestsByRoom.entries)
+      entry.key: List<DataRequest>.from(entry.value),
+  };
 
   static final Map<String, List<Offer>> myOffersByRoom = {
     for (final entry in demoOffersByRoom.entries)
@@ -112,6 +118,49 @@ class ApiService {
     final random = Random(seed);
     final letters = List.generate(5, (_) => chars[random.nextInt(chars.length)]);
     return 'GMS-${letters.join()}';
+  }
+
+  Future<List<DataRequest>> getDataRequests() async {
+    await Future.delayed(const Duration(milliseconds: 400));
+
+    final room = Session.currentStay?.roomNumber ?? 'unknown';
+    final list = List<DataRequest>.from(
+      myDataRequestsByRoom[room] ?? const <DataRequest>[],
+    );
+    list.sort((a, b) => b.requestedAt.compareTo(a.requestedAt));
+    return list;
+  }
+
+  /// BACKEND LATER: the API prepares a JSON file and a readable PDF and gives a link valid for 7 days.
+  Future<DataRequest> requestDataExport() async {
+    await Future.delayed(const Duration(milliseconds: 600));
+    return _addDataRequest(DataRequestType.export);
+  }
+
+  /// BACKEND LATER: the API anonymises the guest's data within 24 hours. This cannot be undone.
+  Future<DataRequest> requestDataDeletion() async {
+    await Future.delayed(const Duration(milliseconds: 600));
+    return _addDataRequest(DataRequestType.delete);
+  }
+
+  DataRequest _addDataRequest(DataRequestType type) {
+    final room = Session.currentStay?.roomNumber ?? 'unknown';
+    final list = myDataRequestsByRoom.putIfAbsent(
+      room,
+      () => <DataRequest>[],
+    );
+    if (list.any((r) => r.type == type && r.isActive)) {
+      throw DataRequestInProgressException();
+    }
+
+    final request = DataRequest(
+      id: 'data-${DateTime.now().microsecondsSinceEpoch}',
+      type: type,
+      status: DataRequestStatus.pending,
+      requestedAt: DateTime.now(),
+    );
+    list.add(request);
+    return request;
   }
 
   Future<LoyaltyAccount> getLoyalty() async {

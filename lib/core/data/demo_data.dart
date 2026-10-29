@@ -1,6 +1,7 @@
 import 'package:gest_managment_app/core/models/app_notification.dart';
 import 'package:gest_managment_app/core/models/case_status.dart';
 import 'package:gest_managment_app/core/models/chat_message.dart';
+import 'package:gest_managment_app/core/models/data_request.dart';
 import 'package:gest_managment_app/core/models/event_item.dart';
 import 'package:gest_managment_app/core/models/feedback_item.dart';
 import 'package:gest_managment_app/core/models/feedback_record.dart';
@@ -561,6 +562,38 @@ final Map<String, List<LoyaltyEntry>> demoLoyaltyByRoom = {
       date: _now.subtract(const Duration(days: 10)),
     ),
   ],
+};
+
+final Map<String, List<DataRequest>> demoDataRequestsByRoom = {
+  '305': [
+    DataRequest(
+      id: 'data-1',
+      type: DataRequestType.export,
+      status: DataRequestStatus.done,
+      requestedAt: _now.subtract(const Duration(days: 3)),
+      completedAt: _now.subtract(const Duration(days: 3, hours: -1)),
+      downloadUrl: 'https://example.com/guest-data/data-1',
+      downloadExpiresAt: _now.add(const Duration(days: 4)),
+    ),
+    DataRequest(
+      id: 'data-0',
+      type: DataRequestType.export,
+      status: DataRequestStatus.done,
+      requestedAt: _now.subtract(const Duration(days: 14)),
+      completedAt: _now.subtract(const Duration(days: 14, hours: -1)),
+      downloadUrl: 'https://example.com/guest-data/data-0',
+      downloadExpiresAt: _now.subtract(const Duration(days: 7)),
+    ),
+  ],
+  '412': [
+    DataRequest(
+      id: 'data-2',
+      type: DataRequestType.delete,
+      status: DataRequestStatus.inProgress,
+      requestedAt: _now.subtract(const Duration(hours: 3)),
+    ),
+  ],
+  '218': const <DataRequest>[],
 };
 
 final Map<String, List<Offer>> demoOffersByRoom = {

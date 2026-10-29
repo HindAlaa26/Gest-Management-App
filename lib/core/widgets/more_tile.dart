@@ -11,6 +11,7 @@ class MoreTile extends StatelessWidget {
     required this.subtitle,
     required this.onTap,
     this.badgeCount = 0,
+    this.destructive = false,
   });
 
   final IconData icon;
@@ -18,6 +19,9 @@ class MoreTile extends StatelessWidget {
   final String subtitle;
   final VoidCallback onTap;
   final int badgeCount;
+
+  /// Red look for actions that remove something.
+  final bool destructive;
 
   @override
   Widget build(BuildContext context) {
@@ -32,15 +36,21 @@ class MoreTile extends StatelessWidget {
             width: 52,
             alignment: Alignment.center,
             height: 52,
-            decoration: const BoxDecoration(
+            decoration: BoxDecoration(
               shape: BoxShape.circle,
-              color: AppColors.tealSoft,
+              color: destructive
+                  ? AppColors.error.withValues(alpha: 0.1)
+                  : AppColors.tealSoft,
             ),
             child: Badge(
               label: Text('$badgeCount'),
               isLabelVisible: badgeCount > 0,
               backgroundColor: AppColors.error,
-              child: Icon(icon, color: AppColors.teal, size: 26),
+              child: Icon(
+                icon,
+                color: destructive ? AppColors.error : AppColors.teal,
+                size: 26,
+              ),
             ),
           ),
           const SizedBox(width: 14),
@@ -51,7 +61,7 @@ class MoreTile extends StatelessWidget {
                 Text(
                   title,
                   style: textTheme.titleMedium?.copyWith(
-                    color: AppColors.navy,
+                    color: destructive ? AppColors.error : AppColors.navy,
                     fontWeight: FontWeight.w700,
                   ),
                 ),
