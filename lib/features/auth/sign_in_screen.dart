@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 
-import 'package:gest_managment_app/core/data/demo_data.dart';
 import 'package:gest_managment_app/core/network/api_client.dart';
 import 'package:gest_managment_app/core/network/api_service.dart';
 import 'package:gest_managment_app/core/theme/theme.dart';
@@ -101,7 +100,7 @@ class _SignInScreenState extends State<SignInScreen> {
                     children: [
                       const SizedBox(height: 46),
                       Text(
-                        demoHotelName,
+                        'Guest Experience',
                         style: Theme.of(context).textTheme.headlineMedium?.copyWith(
                           color: Colors.white,
                           letterSpacing: 1.5,

@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-import 'package:gest_managment_app/core/data/demo_data.dart';
 import 'package:gest_managment_app/core/models/event_item.dart';
 import 'package:gest_managment_app/core/models/guest_stay.dart';
 import 'package:gest_managment_app/core/models/restaurant.dart';
@@ -147,7 +146,7 @@ class _HomeScreenState extends State<HomeScreen> {
         child: const LogoMark(size: 40),
       ),
       title: Text(
-                  demoHotelName,
+                  Session.propertyName ?? 'Guest Experience',
                   style: GoogleFonts.cormorantGaramond(
                     fontSize: 20,
                     fontWeight: FontWeight.w700,

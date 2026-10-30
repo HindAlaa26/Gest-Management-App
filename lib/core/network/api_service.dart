@@ -23,6 +23,7 @@ class Session {
   static String? token;
   static String? propertyId;
   static String? guestProfileId;
+  static String? propertyName;
 
   static void applyToken(String jwt) {
     token = jwt;
@@ -48,6 +49,7 @@ class Session {
     token = null;
     propertyId = null;
     guestProfileId = null;
+    propertyName = null;
   }
 }
 
@@ -303,6 +305,8 @@ class ApiService {
       }, auth: false);
       final data = json['data'] as Map<String, dynamic>;
       Session.applyToken(data['accessToken'] as String);
+      final hotel = (data['propertyName'] as String?)?.trim();
+      Session.propertyName = (hotel == null || hotel.isEmpty) ? null : hotel;
       final stay = GuestStay(
         guestName: data['guestName'] as String,
         roomNumber: data['roomNumber'] as String,
