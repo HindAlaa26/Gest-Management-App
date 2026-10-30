@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'package:gest_managment_app/core/data/demo_data.dart';
+import 'package:gest_managment_app/core/network/api_client.dart';
 import 'package:gest_managment_app/core/network/api_service.dart';
 import 'package:gest_managment_app/core/theme/theme.dart';
 import 'package:gest_managment_app/core/widgets/custom_text_field.dart';
@@ -64,6 +65,11 @@ class _SignInScreenState extends State<SignInScreen> {
       if (!mounted) return;
       setState(() {
         error = 'Room number or last name is incorrect';
+      });
+    } on NetworkException {
+      if (!mounted) return;
+      setState(() {
+        error = 'No connection. Check your internet and try again.';
       });
     } catch (_) {
       if (!mounted) return;

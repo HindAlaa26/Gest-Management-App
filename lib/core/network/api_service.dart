@@ -1,6 +1,9 @@
+import 'dart:convert';
 import 'dart:math';
 
 import 'package:gest_managment_app/core/data/demo_data.dart';
+import 'package:gest_managment_app/core/network/api_client.dart';
+import 'package:gest_managment_app/core/network/api_config.dart';
 import 'package:gest_managment_app/core/models/app_notification.dart';
 import 'package:gest_managment_app/core/models/survey.dart';
 import 'package:gest_managment_app/core/models/case_status.dart';
@@ -17,14 +20,39 @@ import 'package:gest_managment_app/core/models/restaurant.dart';
 
 class Session {
   static GuestStay? currentStay;
+  static String? token;
+  static String? propertyId;
+  static String? guestProfileId;
+
+  static void applyToken(String jwt) {
+    token = jwt;
+    final claims = _decodeClaims(jwt);
+    propertyId = claims['property_id'] as String?;
+    guestProfileId = claims['guest_profile_id'] as String?;
+  }
+
+  static Map<String, dynamic> _decodeClaims(String jwt) {
+    try {
+      final parts = jwt.split('.');
+      if (parts.length != 3) return const {};
+      final payload = utf8.decode(base64Url.decode(base64Url.normalize(parts[1])));
+      final decoded = jsonDecode(payload);
+      return decoded is Map<String, dynamic> ? decoded : const {};
+    } catch (_) {
+      return const {};
+    }
+  }
 
   static void signOut() {
     currentStay = null;
+    token = null;
+    propertyId = null;
+    guestProfileId = null;
   }
 }
 
 class ApiService {
-  static const String baseUrl = '';
+  static const String baseUrl = ApiConfig.baseUrl;
 
   static final Map<String, List<AppNotification>> myNotificationsByRoom = {
     for (final entry in demoNotificationsByRoom.entries)
@@ -268,18 +296,23 @@ class ApiService {
   };
 
   Future<GuestStay> signIn(String roomNumber, String lastName) async {
-    await Future.delayed(const Duration(milliseconds: 600));
-
-    final room = roomNumber.trim();
-    final familyName = lastName.trim();
-    final match = demoStayByLastName[familyName.toLowerCase()];
-
-    if (match == null || match.roomNumber.trim().toLowerCase() != room.toLowerCase()) {
+    try {
+      final json = await ApiClient.post('/api/guest-auth/login', {
+        'roomNumber': roomNumber.trim(),
+        'lastName': lastName.trim(),
+      }, auth: false);
+      final data = json['data'] as Map<String, dynamic>;
+      Session.applyToken(data['accessToken'] as String);
+      final stay = GuestStay(
+        guestName: data['guestName'] as String,
+        roomNumber: data['roomNumber'] as String,
+        checkout: DateTime.parse(data['checkoutDate'] as String),
+      );
+      Session.currentStay = stay;
+      return stay;
+    } on UnauthorizedException {
       throw InvalidCredentialsException();
     }
-
-    Session.currentStay = match;
-    return match;
   }
 
   Future<List<EventItem>> getEvents() async {
