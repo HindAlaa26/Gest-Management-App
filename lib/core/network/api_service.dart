@@ -314,17 +314,126 @@ class ApiService {
       throw InvalidCredentialsException();
     }
   }
-
+ 
   Future<List<EventItem>> getEvents() async {
-    await Future.delayed(const Duration(milliseconds: 600));
+    final propertyId = Session.propertyId;
+    if (propertyId == null) throw UnauthorizedException('Please sign in again.');
 
-    return demoEvents;
+    final query = <String, String>{'from': _ymd(DateTime.now())};
+    final checkout = Session.currentStay?.checkout;
+    if (checkout != null) query['to'] = _ymd(checkout);
+
+    final json = await ApiClient.get(
+      '/api/public/properties/$propertyId/events',
+      query: query,
+      auth: false,
+    );
+    final list = (json['data'] as List?) ?? const [];
+    return list
+        .map((e) => _eventFromJson(e as Map<String, dynamic>))
+        .toList();
   }
 
   Future<List<Restaurant>> getRestaurants() async {
-    await Future.delayed(const Duration(milliseconds: 600));
+    final propertyId = Session.propertyId;
+    if (propertyId == null) throw UnauthorizedException('Please sign in again.');
 
-    return demoRestaurants;
+    final json = await ApiClient.get(
+      '/api/public/properties/$propertyId/restaurants',
+      auth: false,
+    );
+    final list = (json['data'] as List?) ?? const [];
+    return list
+        .map((e) => _restaurantFromJson(e as Map<String, dynamic>))
+        .toList();
+  }
+
+  static String _ymd(DateTime d) =>
+      '${d.year.toString().padLeft(4, '0')}-'
+      '${d.month.toString().padLeft(2, '0')}-'
+      '${d.day.toString().padLeft(2, '0')}';
+
+  static String _text(Object? en, Object? ar) {
+    final e = (en as String?)?.trim() ?? '';
+    if (e.isNotEmpty) return e;
+    return (ar as String?)?.trim() ?? '';
+  }
+
+  static String? _hhmm(Object? value) {
+    final s = (value as String?)?.trim() ?? '';
+    if (s.length < 5) return null;
+    return s.substring(0, 5);
+  }
+
+  static EventItem _eventFromJson(Map<String, dynamic> j) {
+    return EventItem(
+      id: j['id'] as String,
+      title: _text(j['titleEn'], j['titleAr']),
+      date: DateTime.parse(j['eventDate'] as String),
+      startTime: _hhmm(j['startTime']) ?? '00:00',
+      endTime: _hhmm(j['endTime']) ?? '00:00',
+      place: (j['location'] as String?) ?? '',
+      type: '${j['eventType']}'.toLowerCase() == 'party'
+          ? EventType.party
+          : EventType.event,
+      description: _text(j['descriptionEn'], j['descriptionAr']),
+    );
+  }
+
+  static const Map<String, int> _weekdayByName = {
+    'mon': 1,
+    'tue': 2,
+    'wed': 3,
+    'thu': 4,
+    'fri': 5,
+    'sat': 6,
+    'sun': 7,
+  };
+
+  static const List<String> _weekdayNames = [
+    'Mon',
+    'Tue',
+    'Wed',
+    'Thu',
+    'Fri',
+    'Sat',
+    'Sun',
+  ];
+
+  static Restaurant _restaurantFromJson(Map<String, dynamic> j) {
+    final raw = (j['openDays'] as String?) ?? '';
+    final days = <int>{};
+    for (final token in raw.split(RegExp(r'[,\s;]+'))) {
+      if (token.length < 3) continue;
+      final day = _weekdayByName[token.substring(0, 3).toLowerCase()];
+      if (day != null) days.add(day);
+    }
+
+    final stated = days.isNotEmpty;
+    final weekdays = stated ? (days.toList()..sort()) : [1, 2, 3, 4, 5, 6, 7];
+    final label = !stated
+        ? 'Opening days not listed'
+        : weekdays.length == 7
+            ? 'Open every day'
+            : weekdays.map((d) => _weekdayNames[d - 1]).join(', ');
+
+    return Restaurant(
+      name: _text(j['nameEn'], j['nameAr']),
+      openDays: label,
+      openWeekdays: weekdays,
+      breakfast: MealHours(
+        open: _hhmm(j['breakfastStart']),
+        close: _hhmm(j['breakfastEnd']),
+      ),
+      lunch: MealHours(
+        open: _hhmm(j['lunchStart']),
+        close: _hhmm(j['lunchEnd']),
+      ),
+      dinner: MealHours(
+        open: _hhmm(j['dinnerStart']),
+        close: _hhmm(j['dinnerEnd']),
+      ),
+    );
   }
 
   Future<List<FeedbackRecord>> getMyFeedback() async {
