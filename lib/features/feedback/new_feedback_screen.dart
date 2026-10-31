@@ -18,7 +18,7 @@ class NewFeedbackScreen extends StatefulWidget {
 }
 
 class _NewFeedbackScreenState extends State<NewFeedbackScreen> {
-  static const int maxMessageLength = 1000;
+  static const int maxMessageLength = 2000;
 
   final TextEditingController messageController = TextEditingController();
 

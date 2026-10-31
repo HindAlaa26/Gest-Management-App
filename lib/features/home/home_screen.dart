@@ -76,7 +76,7 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   void signOut() {
-    Session.currentStay = null;
+    Session.signOut();
     AppNav.tab.value = 0;
     Navigator.pushAndRemoveUntil(
       context,

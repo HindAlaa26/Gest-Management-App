@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 
 import 'package:gest_managment_app/core/models/chat_message.dart';
@@ -25,16 +27,59 @@ class _MessagesScreenState extends State<MessagesScreen> {
   bool loading = true;
   String? error;
 
+  Timer? pollTimer;
+  bool polling = false;
+
   @override
   void initState() {
     super.initState();
     loadMessages();
+    pollTimer = Timer.periodic(
+      const Duration(seconds: 10),
+      (_) => pollMessages(),
+    );
   }
 
   @override
   void dispose() {
+    pollTimer?.cancel();
     scrollController.dispose();
     super.dispose();
+  }
+
+
+  Future<void> pollMessages() async {
+    if (polling || loading || error != null || !mounted) return;
+    if (messages.any((m) => m.status == MessageDeliveryStatus.sending)) return;
+    polling = true;
+    try {
+      final result = await ApiService().getMessages();
+      if (!mounted) return;
+
+      final merged = <String, ChatMessage>{
+        for (final m in messages) m.id: m,
+        for (final m in result) m.id: m,
+      };
+      final updated = merged.values.toList()
+        ..sort((a, b) => a.sentAt.compareTo(b.sentAt));
+
+      var same = updated.length == messages.length;
+      for (var i = 0; same && i < updated.length; i++) {
+        same = updated[i].id == messages[i].id &&
+            updated[i].status == messages[i].status;
+      }
+      if (same) return;
+
+      final gotNew = updated.length > messages.length;
+      setState(() {
+        messages = updated;
+      });
+      if (gotNew) scrollToBottom();
+    } catch (_) {
+      // Quiet: the next check tries again.
+    } finally {
+      polling = false;
+    }
   }
 
   Future<void> loadMessages() async {

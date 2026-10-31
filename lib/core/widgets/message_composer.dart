@@ -6,7 +6,7 @@ class MessageComposer extends StatefulWidget {
   const MessageComposer({
     super.key,
     required this.onSend,
-    this.maxLength = 1000,
+    this.maxLength = 4000,
   });
 
   final ValueChanged<String> onSend;
@@ -59,7 +59,9 @@ class _MessageComposerState extends State<MessageComposer> {
                 onChanged: (_) => setState(() {}),
                 decoration: InputDecoration(
                   hintText: 'Type a message…',
-                  counterText: '',
+                  counterText: controller.text.length >= widget.maxLength * 0.8
+                      ? '${controller.text.length} / ${widget.maxLength}'
+                      : '',
                   filled: true,
                   fillColor: AppColors.ivory,
                   contentPadding: const EdgeInsets.symmetric(

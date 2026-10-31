@@ -24,6 +24,8 @@ class UnauthorizedException extends ApiException {
 class NetworkException implements Exception {}
 
 class ApiClient {
+  static void Function()? onUnauthorized;
+
   static const Duration _timeout = Duration(seconds: 20);
 
   static Future<Map<String, dynamic>> get(
@@ -103,7 +105,10 @@ class ApiClient {
             ? message
             : (title is String ? title : 'Request failed');
 
-    if (response.statusCode == 401) throw UnauthorizedException(text);
+    if (response.statusCode == 401) {
+      if (auth) onUnauthorized?.call();
+      throw UnauthorizedException(text);
+    }
     throw ApiException(response.statusCode, text);
   }
 }
