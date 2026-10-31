@@ -192,14 +192,48 @@ class ApiService {
   }
 
   Future<LoyaltyAccount> getLoyalty() async {
-    await Future.delayed(const Duration(milliseconds: 400));
+    final json = await ApiClient.get('/api/guest-app/loyalty');
+    final data = json['data'] as Map<String, dynamic>;
 
-    final room = Session.currentStay?.roomNumber ?? 'unknown';
-    final entries = List<LoyaltyEntry>.from(
-      demoLoyaltyByRoom[room] ?? const <LoyaltyEntry>[],
-    );
+    final recent = (data['recent'] as List?) ?? const [];
+    final entries = <LoyaltyEntry>[];
+    for (var i = 0; i < recent.length; i++) {
+      entries.add(_loyaltyEntryFromJson(recent[i] as Map<String, dynamic>, i));
+    }
     entries.sort((a, b) => b.date.compareTo(a.date));
-    return LoyaltyAccount(entries: entries);
+
+    return LoyaltyAccount(
+      entries: entries,
+      balance: (data['availablePoints'] as num?)?.toInt() ?? 0,
+      tierPoints: (data['rollingEarnedPoints'] as num?)?.toInt() ?? 0,
+      serverTierName: data['tier'] as String?,
+    );
+  }
+
+  static LoyaltyEntry _loyaltyEntryFromJson(Map<String, dynamic> j, int index) {
+    final kind = '${j['type']}'.toLowerCase();
+    LoyaltyEntryType type = LoyaltyEntryType.earn;
+    String label = 'Earned';
+    if (kind == 'redeem') {
+      type = LoyaltyEntryType.redeem;
+      label = 'Redeemed';
+    } else if (kind == 'expire') {
+      type = LoyaltyEntryType.expire;
+      label = 'Expired';
+    } else if (kind == 'adjust') {
+      type = LoyaltyEntryType.adjust;
+      label = 'Adjustment';
+    }
+
+    final when = DateTime.parse(j['occurredAtUtc'] as String).toLocal();
+    return LoyaltyEntry(
+      id: '${j['occurredAtUtc']}-$index',
+      type: type,
+      points: (j['points'] as num?)?.toInt() ?? 0,
+      reason: (j['reason'] as String?) ?? '',
+      source: label,
+      date: when,
+    );
   }
 
   Future<List<AppNotification>> getNotifications() async {

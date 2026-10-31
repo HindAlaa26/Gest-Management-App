@@ -38,20 +38,27 @@ class LoyaltyEntry {
 }
 
 class LoyaltyAccount {
-  const LoyaltyAccount({this.entries = const []});
+  const LoyaltyAccount({
+    this.entries = const [],
+    this.balance = 0,
+    this.tierPoints = 0,
+    this.serverTierName,
+  });
 
   final List<LoyaltyEntry> entries;
 
-  int get balance => entries.fold<int>(0, (sum, entry) => sum + entry.points);
+  final int balance;
 
-  int get tierPoints {
-    final since = DateTime.now().subtract(const Duration(days: 365));
-    return entries
-        .where((entry) => entry.points > 0 && entry.date.isAfter(since))
-        .fold<int>(0, (sum, entry) => sum + entry.points);
-  }
+  final int tierPoints;
+
+  final String? serverTierName;
+
 
   LoyaltyTier get tier {
+    final name = serverTierName?.trim().toLowerCase();
+    for (final candidate in LoyaltyTier.values) {
+      if (candidate.label.toLowerCase() == name) return candidate;
+    }
     var result = LoyaltyTier.silver;
     for (final candidate in LoyaltyTier.values) {
       if (tierPoints >= candidate.minPoints) result = candidate;
