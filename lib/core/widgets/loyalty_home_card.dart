@@ -88,7 +88,7 @@ class _LoyaltyHomeCardState extends State<LoyaltyHomeCard> {
                           fontWeight: FontWeight.w700,
                         ),
                       ),
-                      LoyaltyTierChip(current.tier),
+                      LoyaltyTierChip(current.tier, name: current.tierLabel),
                     ],
                   ),
                 ),

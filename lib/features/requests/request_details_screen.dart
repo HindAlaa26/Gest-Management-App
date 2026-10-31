@@ -143,7 +143,8 @@ class _RequestDetailsScreenState extends State<RequestDetailsScreen> {
       RequestStatus.done,
     ];
     final currentIndex = flow.indexOf(r.status);
-    final cancelled = r.status == RequestStatus.cancelled;
+    final cancelled = r.status == RequestStatus.cancelled ||
+        r.status == RequestStatus.failed;
     final steps = <TimelineStep>[];
 
     for (var i = 0; i < flow.length; i++) {
@@ -186,11 +187,14 @@ class _RequestDetailsScreenState extends State<RequestDetailsScreen> {
     }
 
     if (cancelled) {
-      final at = r.reachedAt(RequestStatus.cancelled);
+      final failed = r.status == RequestStatus.failed;
+      final at = r.reachedAt(r.status);
       steps.add(
         TimelineStep(
-          title: 'Cancelled',
-          caption: r.cancelReason ?? '',
+          title: failed ? 'Not completed' : 'Cancelled',
+          caption: failed
+              ? 'We could not complete this request. Please contact the front desk.'
+              : r.cancelReason ?? '',
           state: TimelineStepState.cancelled,
           time: at == null ? null : formatRequestTime(at),
         ),
@@ -364,7 +368,8 @@ class _RequestDetailsScreenState extends State<RequestDetailsScreen> {
           crossAxisAlignment: WrapCrossAlignment.center,
           children: [
             RequestStatusBadge(status: r.status),
-            if (r.urgency == RequestUrgency.urgent) const UrgentTag(),
+            if (r.urgency != RequestUrgency.normal)
+              UrgentTag(emergency: r.urgency == RequestUrgency.emergency),
           ],
         ),
         const SizedBox(height: 8),

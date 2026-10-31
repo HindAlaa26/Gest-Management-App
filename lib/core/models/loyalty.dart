@@ -66,6 +66,11 @@ class LoyaltyAccount {
     return result;
   }
 
+  String get tierLabel {
+    final name = serverTierName?.trim() ?? '';
+    return name.isEmpty ? tier.label : name;
+  }
+
   LoyaltyTier? get nextTier => tier.next;
 
   int get pointsToNext {

@@ -43,8 +43,10 @@ class RequestSummaryCard extends StatelessWidget {
                   ),
                 ),
               ),
-              if (request.urgency == RequestUrgency.urgent) ...[
-                const UrgentTag(),
+              if (request.urgency != RequestUrgency.normal) ...[
+                UrgentTag(
+                  emergency: request.urgency == RequestUrgency.emergency,
+                ),
                 const SizedBox(width: 8),
               ],
               RequestStatusBadge(status: request.status),

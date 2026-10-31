@@ -45,12 +45,16 @@ class CategoryOptionTile extends StatelessWidget {
                   size: 24,
                 ),
                 const SizedBox(height: 6),
-                Text(
-                  label,
-                  textAlign: TextAlign.center,
-                  style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                    color: selected ? Colors.white : AppColors.navy,
-                    fontWeight: FontWeight.w600,
+                FittedBox(
+                  fit: BoxFit.scaleDown,
+                  child: Text(
+                    label,
+                    maxLines: 1,
+                    textAlign: TextAlign.center,
+                    style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                      color: selected ? Colors.white : AppColors.navy,
+                      fontWeight: FontWeight.w600,
+                    ),
                   ),
                 ),
               ],

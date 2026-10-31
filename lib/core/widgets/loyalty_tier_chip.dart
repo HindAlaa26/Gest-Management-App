@@ -4,9 +4,11 @@ import 'package:gest_managment_app/core/models/loyalty.dart';
 import 'package:gest_managment_app/core/utils/loyalty_labels.dart';
 
 class LoyaltyTierChip extends StatelessWidget {
-  const LoyaltyTierChip(this.tier, {super.key});
+  const LoyaltyTierChip(this.tier, {super.key, this.name});
 
   final LoyaltyTier tier;
+
+  final String? name;
 
   @override
   Widget build(BuildContext context) {
@@ -22,7 +24,7 @@ class LoyaltyTierChip extends StatelessWidget {
         ),
       ),
       child: Text(
-        tier.label.toUpperCase(),
+        (name ?? tier.label).toUpperCase(),
         style: Theme.of(context).textTheme.labelSmall?.copyWith(
           color: palette.chipForeground,
           fontWeight: FontWeight.w700,

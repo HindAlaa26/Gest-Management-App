@@ -63,6 +63,8 @@ extension RequestStatusLabels on RequestStatus {
         return 'Done';
       case RequestStatus.cancelled:
         return 'Cancelled';
+      case RequestStatus.failed:
+        return 'Not completed';
     }
   }
 }
@@ -74,6 +76,8 @@ extension RequestUrgencyLabels on RequestUrgency {
         return 'Normal';
       case RequestUrgency.urgent:
         return 'Urgent';
+      case RequestUrgency.emergency:
+        return 'Emergency';
     }
   }
 }

@@ -23,7 +23,7 @@ class _ChangeRequestScreenState extends State<ChangeRequestScreen> {
     for (final line in widget.request.lines) line.item.id: line.qty,
   };
   late int urgencyIndex =
-      widget.request.urgency == RequestUrgency.urgent ? 1 : 0;
+      widget.request.urgency == RequestUrgency.normal ? 0 : 1;
 
   bool loading = false;
   String? error;

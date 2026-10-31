@@ -1,6 +1,14 @@
 enum FeedbackType { feedback, complaint }
 
-enum FeedbackCategory { room, food, staff, other }
+enum FeedbackCategory {
+  room,
+  food,
+  staff,
+  other,
+  maintenance,
+  housekeeping,
+  billing,
+}
 
 class FeedbackItem {
   const FeedbackItem({

@@ -27,7 +27,7 @@ class _RestaurantsScreenState extends State<RestaurantsScreen> {
     _loadRestaurants();
   }
 
-  Future<void> _loadRestaurants() async {
+  Future<void> _loadRestaurants({bool refresh = false}) async {
     if (!mounted) return;
 
     setState(() {
@@ -36,7 +36,7 @@ class _RestaurantsScreenState extends State<RestaurantsScreen> {
     });
 
     try {
-      final restaurants = await ApiService().getRestaurants();
+      final restaurants = await ApiService().getRestaurants(refresh: refresh);
       if (!mounted) return;
       setState(() {
         _restaurants = restaurants;
@@ -63,7 +63,7 @@ class _RestaurantsScreenState extends State<RestaurantsScreen> {
       ),
       body: SafeArea(
         child: RefreshIndicator(
-          onRefresh: _loadRestaurants,
+          onRefresh: () => _loadRestaurants(refresh: true),
           child: ListView(
             padding: const EdgeInsets.fromLTRB(20, 12, 20, 28),
             children: [

@@ -14,6 +14,12 @@ extension FeedbackCategoryLabels on FeedbackCategory {
         return 'Staff';
       case FeedbackCategory.other:
         return 'Other';
+      case FeedbackCategory.maintenance:
+        return 'Maintenance';
+      case FeedbackCategory.housekeeping:
+        return 'Housekeeping';
+      case FeedbackCategory.billing:
+        return 'Billing';
     }
   }
 
@@ -27,6 +33,12 @@ extension FeedbackCategoryLabels on FeedbackCategory {
         return Icons.person_outline;
       case FeedbackCategory.other:
         return Icons.more_horiz;
+      case FeedbackCategory.maintenance:
+        return Icons.build_outlined;
+      case FeedbackCategory.housekeeping:
+        return Icons.cleaning_services_outlined;
+      case FeedbackCategory.billing:
+        return Icons.receipt_long_outlined;
     }
   }
 }

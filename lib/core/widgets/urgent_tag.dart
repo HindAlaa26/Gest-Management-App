@@ -3,7 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:gest_managment_app/core/theme/theme.dart';
 
 class UrgentTag extends StatelessWidget {
-  const UrgentTag({super.key});
+  const UrgentTag({super.key, this.emergency = false});
+
+  final bool emergency;
 
   @override
   Widget build(BuildContext context) {
@@ -14,7 +16,7 @@ class UrgentTag extends StatelessWidget {
         borderRadius: BorderRadius.circular(999),
       ),
       child: Text(
-        'URGENT',
+        emergency ? 'EMERGENCY' : 'URGENT',
         style: Theme.of(context).textTheme.labelSmall?.copyWith(
           color: AppColors.error,
           fontWeight: FontWeight.w700,

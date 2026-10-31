@@ -1,8 +1,8 @@
 enum VendorType { water, drinks, cleaning, maintenance, other }
 
-enum RequestUrgency { normal, urgent }
+enum RequestUrgency { normal, urgent, emergency }
 
-enum RequestStatus { newRequest, assigned, inProgress, done, cancelled }
+enum RequestStatus { newRequest, assigned, inProgress, done, cancelled, failed }
 
 class CatalogueItem {
   const CatalogueItem({

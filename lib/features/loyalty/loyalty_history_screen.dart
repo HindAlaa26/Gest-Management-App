@@ -69,7 +69,7 @@ class LoyaltyHistoryScreen extends StatelessWidget {
                   ),
                 ),
               ),
-              LoyaltyTierChip(account.tier),
+              LoyaltyTierChip(account.tier, name: account.tierLabel),
             ],
           ),
           const SizedBox(height: 10),

@@ -52,9 +52,7 @@ class _ReviewRequestScreenState extends State<ReviewRequestScreen> {
     try {
       final request = await ApiService().sendRequest(
         vendorType: widget.vendorType,
-        urgency: urgencyIndex == 0
-            ? RequestUrgency.normal
-            : RequestUrgency.urgent,
+        urgency: RequestUrgency.values[urgencyIndex],
         lines: widget.lines,
         note: noteController.text.trim(),
       );
@@ -138,6 +136,7 @@ class _ReviewRequestScreenState extends State<ReviewRequestScreen> {
                 labels: [
                   RequestUrgency.normal.label,
                   RequestUrgency.urgent.label,
+                  RequestUrgency.emergency.label,
                 ],
                 selectedIndex: urgencyIndex,
                 onChanged: (index) => setState(() => urgencyIndex = index),

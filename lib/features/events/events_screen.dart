@@ -30,7 +30,7 @@ class _EventsScreenState extends State<EventsScreen> {
     loadEvents();
   }
 
-  Future<void> loadEvents() async {
+  Future<void> loadEvents({bool refresh = false}) async {
     if (!mounted) return;
 
     setState(() {
@@ -39,7 +39,7 @@ class _EventsScreenState extends State<EventsScreen> {
     });
 
     try {
-      final allEvents = await ApiService().getEvents();
+      final allEvents = await ApiService().getEvents(refresh: refresh);
       final stay = Session.currentStay;
 
       if (!mounted) return;
@@ -69,7 +69,7 @@ class _EventsScreenState extends State<EventsScreen> {
       ),
       body: SafeArea(
         child: RefreshIndicator(
-          onRefresh: loadEvents,
+          onRefresh: () => loadEvents(refresh: true),
           child: ListView(
             padding: const EdgeInsets.fromLTRB(20, 12, 20, 28),
             children: [

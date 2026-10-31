@@ -35,6 +35,10 @@ class RequestStatusBadge extends StatelessWidget {
         background = const Color(0xFFF3F5F7);
         foreground = AppColors.muted;
         break;
+      case RequestStatus.failed:
+        background = AppColors.error.withValues(alpha: 0.1);
+        foreground = AppColors.error;
+        break;
     }
 
     return Container(

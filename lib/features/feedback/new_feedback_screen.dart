@@ -117,6 +117,8 @@ class _NewFeedbackScreenState extends State<NewFeedbackScreen> {
                       const SizedBox(height: 22),
                       const SectionLabel('Category'),
                       const SizedBox(height: 12),
+                      Column(
+                        children: [
                       Row(
                         children: [
                           CategoryOptionTile(
@@ -166,6 +168,50 @@ class _NewFeedbackScreenState extends State<NewFeedbackScreen> {
                               });
                             },
                           ),
+                        ],
+                      ),
+                      const SizedBox(height: 10),
+                      Row(
+                        children: [
+                          CategoryOptionTile(
+                            icon: FeedbackCategory.maintenance.icon,
+                            label: FeedbackCategory.maintenance.label,
+                            selected: selectedCategory == FeedbackCategory.maintenance,
+                            onTap: () {
+                              setState(() {
+                                selectedCategory = FeedbackCategory.maintenance;
+                                error = null;
+                              });
+                            },
+                          ),
+                          const SizedBox(width: 10),
+                          CategoryOptionTile(
+                            icon: FeedbackCategory.housekeeping.icon,
+                            label: FeedbackCategory.housekeeping.label,
+                            selected: selectedCategory == FeedbackCategory.housekeeping,
+                            onTap: () {
+                              setState(() {
+                                selectedCategory = FeedbackCategory.housekeeping;
+                                error = null;
+                              });
+                            },
+                          ),
+                          const SizedBox(width: 10),
+                          CategoryOptionTile(
+                            icon: FeedbackCategory.billing.icon,
+                            label: FeedbackCategory.billing.label,
+                            selected: selectedCategory == FeedbackCategory.billing,
+                            onTap: () {
+                              setState(() {
+                                selectedCategory = FeedbackCategory.billing;
+                                error = null;
+                              });
+                            },
+                          ),
+                          const SizedBox(width: 10),
+                          const Expanded(child: SizedBox.shrink()),
+                        ],
+                      ),
                         ],
                       ),
                       const SizedBox(height: 22),

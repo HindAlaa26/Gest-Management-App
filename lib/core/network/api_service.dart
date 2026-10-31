@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:math';
 
@@ -50,11 +51,51 @@ class Session {
     propertyId = null;
     guestProfileId = null;
     propertyName = null;
+    ApiService.clearCache();
   }
+}
+
+class _Cached<T> {
+  _Cached(this.value) : at = DateTime.now();
+
+  final T value;
+  final DateTime at;
+
+  bool fresh(Duration life) => DateTime.now().difference(at) < life;
 }
 
 class ApiService {
   static const String baseUrl = ApiConfig.baseUrl;
+
+  static const Duration _publicCacheLife = Duration(minutes: 5);
+  static const Duration _loyaltyCacheLife = Duration(seconds: 30);
+  static _Cached<List<EventItem>>? _eventsCache;
+  static _Cached<List<Restaurant>>? _restaurantsCache;
+  static _Cached<LoyaltyAccount>? _loyaltyCache;
+
+  static void clearCache() {
+    _eventsCache = null;
+    _restaurantsCache = null;
+    _loyaltyCache = null;
+    _catalogueCache.clear();
+  }
+
+
+  static Future<void> prefetch() async {
+    final api = ApiService();
+    Future<void> safe(Future<void> Function() job) async {
+      try {
+        await job();
+      } catch (_) {}
+    }
+
+    await Future.wait([
+      safe(() => api.getEvents(refresh: true)),
+      safe(() => api.getRestaurants(refresh: true)),
+      safe(() => api.getLoyalty(refresh: true)),
+      safe(() => api._ensureCatalogue()),
+    ]);
+  }
 
   static final Map<String, List<AppNotification>> myNotificationsByRoom = {
     for (final entry in demoNotificationsByRoom.entries)
@@ -191,7 +232,17 @@ class ApiService {
     return request;
   }
 
-  Future<LoyaltyAccount> getLoyalty() async {
+  Future<LoyaltyAccount> getLoyalty({bool refresh = false}) async {
+    final cached = _loyaltyCache;
+    if (!refresh && cached != null && cached.fresh(_loyaltyCacheLife)) {
+      return cached.value;
+    }
+    final value = await _fetchLoyalty();
+    _loyaltyCache = _Cached(value);
+    return value;
+  }
+
+  Future<LoyaltyAccount> _fetchLoyalty() async {
     final json = await ApiClient.get('/api/guest-app/loyalty');
     final data = json['data'] as Map<String, dynamic>;
 
@@ -383,13 +434,24 @@ class ApiService {
         checkout: DateTime.parse(data['checkoutDate'] as String),
       );
       Session.currentStay = stay;
+      unawaited(prefetch());
       return stay;
     } on UnauthorizedException {
       throw InvalidCredentialsException();
     }
   }
  
-  Future<List<EventItem>> getEvents() async {
+  Future<List<EventItem>> getEvents({bool refresh = false}) async {
+    final cached = _eventsCache;
+    if (!refresh && cached != null && cached.fresh(_publicCacheLife)) {
+      return cached.value;
+    }
+    final value = await _fetchEvents();
+    _eventsCache = _Cached(value);
+    return value;
+  }
+
+  Future<List<EventItem>> _fetchEvents() async {
     final propertyId = Session.propertyId;
     if (propertyId == null) throw UnauthorizedException('Please sign in again.');
 
@@ -408,7 +470,17 @@ class ApiService {
         .toList();
   }
 
-  Future<List<Restaurant>> getRestaurants() async {
+  Future<List<Restaurant>> getRestaurants({bool refresh = false}) async {
+    final cached = _restaurantsCache;
+    if (!refresh && cached != null && cached.fresh(_publicCacheLife)) {
+      return cached.value;
+    }
+    final value = await _fetchRestaurants();
+    _restaurantsCache = _Cached(value);
+    return value;
+  }
+
+  Future<List<Restaurant>> _fetchRestaurants() async {
     final propertyId = Session.propertyId;
     if (propertyId == null) throw UnauthorizedException('Please sign in again.');
 
@@ -600,6 +672,28 @@ class ApiService {
     }
   }
 
+  static RequestUrgency _urgencyFrom(Object? value) {
+    switch ('$value'.toLowerCase()) {
+      case 'normal':
+        return RequestUrgency.normal;
+      case 'emergency':
+        return RequestUrgency.emergency;
+      default:
+        return RequestUrgency.urgent;
+    }
+  }
+
+  static String _urgencyName(RequestUrgency urgency) {
+    switch (urgency) {
+      case RequestUrgency.normal:
+        return 'Normal';
+      case RequestUrgency.urgent:
+        return 'Urgent';
+      case RequestUrgency.emergency:
+        return 'Emergency';
+    }
+  }
+
   static RequestStatus _requestStatusFrom(Object? value) {
     switch ('$value'.toLowerCase()) {
       case 'assigned':
@@ -608,9 +702,11 @@ class ApiService {
         return RequestStatus.inProgress;
       case 'done':
         return RequestStatus.done;
-      case 'cancelled':
-      case 'failed':
+            case 'cancelled':
         return RequestStatus.cancelled;
+      case 'failed':
+        return RequestStatus.failed;
+
       default:
         return RequestStatus.newRequest;
     }
@@ -674,9 +770,7 @@ class ApiService {
       vendorType:
           lines.isEmpty ? VendorType.other : lines.first.item.vendorType,
       lines: lines,
-      urgency: '${j['urgency']}'.toLowerCase() == 'normal'
-          ? RequestUrgency.normal
-          : RequestUrgency.urgent,
+      urgency: _urgencyFrom(j['urgency']),
       note: (j['note'] as String?) ?? '',
       createdAt: _parseUtc(j['createdAtUtc'] as String),
       status: _requestStatusFrom(j['status']),
@@ -697,7 +791,7 @@ class ApiService {
         for (final line in lines)
           {'catalogueItemId': line.item.id, 'quantity': line.qty},
       ],
-      'urgency': urgency == RequestUrgency.urgent ? 'Urgent' : 'Normal',
+      'urgency': _urgencyName(urgency),
     };
     if (note.trim().isNotEmpty) body['note'] = note.trim();
 

@@ -41,7 +41,7 @@ class _HomeScreenState extends State<HomeScreen> {
     loadData();
   }
 
-  Future<void> loadData() async {
+  Future<void> loadData({bool refresh = false}) async {
     if (!mounted) return;
 
     setState(() {
@@ -51,8 +51,8 @@ class _HomeScreenState extends State<HomeScreen> {
 
     try {
       final results = await Future.wait([
-        ApiService().getEvents(),
-        ApiService().getRestaurants(),
+        ApiService().getEvents(refresh: refresh),
+        ApiService().getRestaurants(refresh: refresh),
       ]);
 
       if (!mounted) return;
@@ -106,7 +106,7 @@ class _HomeScreenState extends State<HomeScreen> {
       body: SafeArea(
         child: RefreshIndicator(
           color: AppColors.teal,
-          onRefresh: loadData,
+          onRefresh: () => loadData(refresh: true),
           child: ListView(
             padding: const EdgeInsets.fromLTRB(20, 10, 20, 28),
             children: [
