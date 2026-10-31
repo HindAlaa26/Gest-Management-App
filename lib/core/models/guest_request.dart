@@ -58,11 +58,15 @@ class GuestRequest {
   final String? cancelReason;
   final RequestRating? rating;
 
-  bool get canChange =>
-      status == RequestStatus.newRequest || status == RequestStatus.assigned;
 
-  bool get canCancel =>
-      status == RequestStatus.newRequest || status == RequestStatus.assigned;
+  String get shortReference => reference.length >= 32
+      ? 'REQ-${reference.substring(0, 8).toUpperCase()}'
+      : reference;
+
+
+  bool get canChange => false;
+
+  bool get canCancel => false;
 
   bool get canRate {
     if (status != RequestStatus.done || rating != null) return false;

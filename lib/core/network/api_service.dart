@@ -225,7 +225,7 @@ class ApiService {
       label = 'Adjustment';
     }
 
-    final when = DateTime.parse(j['occurredAtUtc'] as String).toLocal();
+    final when = _parseUtc(j['occurredAtUtc'] as String);
     return LoyaltyEntry(
       id: '${j['occurredAtUtc']}-$index',
       type: type,
@@ -514,10 +514,139 @@ class ApiService {
       entry.key: List<GuestRequest>.from(entry.value),
   };
 
-  Future<List<CatalogueItem>> getCatalogue(VendorType type) async {
-    await Future.delayed(const Duration(milliseconds: 600));
 
-    return demoCatalogue.where((item) => item.vendorType == type).toList();
+  static final Map<String, CatalogueItem> _catalogueCache = {};
+
+  Future<List<CatalogueItem>> _loadCatalogue() async {
+    final json = await ApiClient.get('/api/guest-app/catalogue');
+    final list = (json['data'] as List?) ?? const [];
+    final items = list
+        .map((e) => _catalogueItemFromJson(e as Map<String, dynamic>))
+        .toList();
+    _catalogueCache
+      ..clear()
+      ..addEntries(items.map((i) => MapEntry(i.id, i)));
+    return items;
+  }
+
+  Future<void> _ensureCatalogue() async {
+    if (_catalogueCache.isNotEmpty) return;
+    try {
+      await _loadCatalogue();
+    } catch (_) {
+    }
+  }
+
+  Future<List<CatalogueItem>> getCatalogue(VendorType type) async {
+    final items = await _loadCatalogue();
+    return items.where((item) => item.vendorType == type).toList();
+  }
+
+
+  static DateTime _parseUtc(String value) {
+    final hasZone =
+        value.endsWith('Z') || RegExp(r'[+-]\d\d:\d\d$').hasMatch(value);
+    return DateTime.parse(hasZone ? value : '${value}Z').toLocal();
+  }
+
+  static VendorType _vendorTypeFrom(Object? value) {
+    switch ('$value'.toLowerCase()) {
+      case 'water':
+        return VendorType.water;
+      case 'drinks':
+        return VendorType.drinks;
+      case 'cleaning':
+        return VendorType.cleaning;
+      case 'maintenance':
+        return VendorType.maintenance;
+      default:
+        return VendorType.other;
+    }
+  }
+
+  static RequestStatus _requestStatusFrom(Object? value) {
+    switch ('$value'.toLowerCase()) {
+      case 'assigned':
+        return RequestStatus.assigned;
+      case 'inprogress':
+        return RequestStatus.inProgress;
+      case 'done':
+        return RequestStatus.done;
+      case 'cancelled':
+      case 'failed':
+        return RequestStatus.cancelled;
+      default:
+        return RequestStatus.newRequest;
+    }
+  }
+
+  static CatalogueItem _catalogueItemFromJson(Map<String, dynamic> j) {
+    return CatalogueItem(
+      id: j['id'] as String,
+      vendorType: _vendorTypeFrom(j['vendorType']),
+      nameEn: _text(j['nameEn'], j['nameAr']),
+      nameAr: (j['nameAr'] as String?) ?? '',
+      price: (j['price'] as num?)?.toDouble() ?? 0,
+      chargeable: (j['isChargeable'] as bool?) ?? false,
+    );
+  }
+
+  static GuestRequest _requestFromJson(Map<String, dynamic> j) {
+    final lines = <RequestLine>[];
+    for (final raw in (j['items'] as List?) ?? const []) {
+      final m = raw as Map<String, dynamic>;
+      final id = m['catalogueItemId'] as String;
+      final known = _catalogueCache[id];
+      lines.add(
+        RequestLine(
+          item: CatalogueItem(
+            id: id,
+            vendorType: known?.vendorType ?? VendorType.other,
+            nameEn: _text(m['nameEn'], m['nameAr']),
+            nameAr: (m['nameAr'] as String?) ?? '',
+            price: (m['unitPrice'] as num?)?.toDouble() ?? 0,
+            chargeable: (m['isChargeable'] as bool?) ?? false,
+          ),
+          qty: (m['quantity'] as num?)?.toInt() ?? 1,
+        ),
+      );
+    }
+
+    final history = <RequestStatusEntry>[];
+    for (final raw in (j['statusHistory'] as List?) ?? const []) {
+      final m = raw as Map<String, dynamic>;
+      history.add(
+        RequestStatusEntry(
+          status: _requestStatusFrom(m['status']),
+          at: _parseUtc(m['changedAtUtc'] as String),
+        ),
+      );
+    }
+
+    RequestRating? rating;
+    final ratingJson = j['rating'];
+    if (ratingJson is Map<String, dynamic>) {
+      rating = RequestRating(
+        stars: (ratingJson['stars'] as num?)?.toInt() ?? 0,
+        comment: (ratingJson['comment'] as String?) ?? '',
+        ratedAt: _parseUtc(ratingJson['createdAtUtc'] as String),
+      );
+    }
+
+    return GuestRequest(
+      reference: j['id'] as String,
+      vendorType:
+          lines.isEmpty ? VendorType.other : lines.first.item.vendorType,
+      lines: lines,
+      urgency: '${j['urgency']}'.toLowerCase() == 'normal'
+          ? RequestUrgency.normal
+          : RequestUrgency.urgent,
+      note: (j['note'] as String?) ?? '',
+      createdAt: _parseUtc(j['createdAtUtc'] as String),
+      status: _requestStatusFrom(j['status']),
+      history: history,
+      rating: rating,
+    );
   }
 
 
@@ -527,39 +656,35 @@ class ApiService {
     required List<RequestLine> lines,
     String note = '',
   }) async {
-    await Future.delayed(const Duration(milliseconds: 600));
+    final body = <String, dynamic>{
+      'items': [
+        for (final line in lines)
+          {'catalogueItemId': line.item.id, 'quantity': line.qty},
+      ],
+      'urgency': urgency == RequestUrgency.urgent ? 'Urgent' : 'Normal',
+    };
+    if (note.trim().isNotEmpty) body['note'] = note.trim();
 
-    final request = GuestRequest(
-      reference: 'REQ-${1000 + Random().nextInt(9000)}',
-      vendorType: vendorType,
-      lines: lines,
-      urgency: urgency,
-      note: note,
-      createdAt: DateTime.now(),
-      status: RequestStatus.newRequest,
-    );
-
-    final room = Session.currentStay?.roomNumber ?? 'unknown';
-    myRequestsByRoom.putIfAbsent(room, () => <GuestRequest>[]).insert(0, request);
-
-    return request;
+    final json = await ApiClient.post('/api/guest-app/requests', body);
+    return _requestFromJson(json['data'] as Map<String, dynamic>);
   }
 
   Future<List<GuestRequest>> getMyRequests() async {
-    await Future.delayed(const Duration(milliseconds: 500));
-
-    final room = Session.currentStay?.roomNumber ?? 'unknown';
-    final list = List<GuestRequest>.from(
-      myRequestsByRoom[room] ?? const <GuestRequest>[],
+    await _ensureCatalogue();
+    final json = await ApiClient.get(
+      '/api/guest-app/requests',
+      query: {'page': '1', 'size': '100'},
     );
-    list.sort((a, b) => b.createdAt.compareTo(a.createdAt));
-    return list;
+    final list = (json['data'] as List?) ?? const [];
+    return list
+        .map((e) => _requestFromJson(e as Map<String, dynamic>))
+        .toList();
   }
 
   Future<GuestRequest> getRequest(String reference) async {
-    await Future.delayed(const Duration(milliseconds: 300));
-
-    return _findRequest(reference);
+    await _ensureCatalogue();
+    final json = await ApiClient.get('/api/guest-app/requests/$reference');
+    return _requestFromJson(json['data'] as Map<String, dynamic>);
   }
 
   Future<GuestRequest> changeRequest({
@@ -599,26 +724,11 @@ class ApiService {
     required int stars,
     String comment = '',
   }) async {
-    await Future.delayed(const Duration(milliseconds: 500));
+    final body = <String, dynamic>{'stars': stars};
+    if (comment.trim().isNotEmpty) body['comment'] = comment.trim();
 
-    return _updateRequest(reference, (current) {
-      if (!current.canRate) throw RequestNotAllowedException();
-      return current.copyWith(
-        rating: RequestRating(
-          stars: stars,
-          comment: comment,
-          ratedAt: DateTime.now(),
-        ),
-      );
-    });
-  }
-
-  GuestRequest _findRequest(String reference) {
-    final room = Session.currentStay?.roomNumber ?? 'unknown';
-    for (final request in myRequestsByRoom[room] ?? const <GuestRequest>[]) {
-      if (request.reference == reference) return request;
-    }
-    throw RequestNotFoundException();
+    await ApiClient.post('/api/guest-app/requests/$reference/rating', body);
+    return getRequest(reference);
   }
 
   GuestRequest _updateRequest(

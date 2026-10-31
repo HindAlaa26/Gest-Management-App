@@ -35,7 +35,7 @@ class RequestSummaryCard extends StatelessWidget {
             children: [
               Expanded(
                 child: Text(
-                  request.reference,
+                  request.shortReference,
                   style: textTheme.bodyLarge?.copyWith(
                     color: AppColors.navy,
                     fontWeight: FontWeight.w700,

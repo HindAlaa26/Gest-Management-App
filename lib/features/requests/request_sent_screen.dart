@@ -89,7 +89,7 @@ class _RequestSentScreenState extends State<RequestSentScreen> {
               const SizedBox(height: 20),
               const GoldDivider(width: 220),
               const SizedBox(height: 20),
-              Center(child: ReferenceBadge(reference: request.reference)),
+              Center(child: ReferenceBadge(reference: request.shortReference)),
               const SizedBox(height: 14),
               Center(child: RequestStatusBadge(status: request.status)),
               const SizedBox(height: 24),

@@ -354,7 +354,7 @@ class _RequestDetailsScreenState extends State<RequestDetailsScreen> {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         Text(
-          r.reference,
+          r.shortReference,
           style: textTheme.headlineMedium?.copyWith(color: AppColors.navy),
         ),
         const SizedBox(height: 8),
