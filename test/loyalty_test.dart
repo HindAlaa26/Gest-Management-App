@@ -1,52 +1,18 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:gest_managment_app/core/data/demo_data.dart';
 import 'package:gest_managment_app/core/models/loyalty.dart';
-import 'package:gest_managment_app/core/network/api_service.dart';
 import 'package:gest_managment_app/core/utils/loyalty_labels.dart';
-
-LoyaltyEntry earnEntry(int points, int daysAgo) {
-  return LoyaltyEntry(
-    id: 'e-$daysAgo-$points',
-    type: LoyaltyEntryType.earn,
-    points: points,
-    reason: 'Stay',
-    source: 'Stay',
-    date: DateTime.now().subtract(Duration(days: daysAgo)),
-  );
-}
 
 void main() {
   group('loyalty', () {
-    test('room 305 is Gold with the newest entry first', () async {
-      Session.currentStay = demoStays.first;
+    test('the tier comes from the server tier name', () {
+      const account = LoyaltyAccount(serverTierName: 'Gold', tierPoints: 0);
 
-      final account = await ApiService().getLoyalty();
-
-      expect(account.balance, 2450);
       expect(account.tier, LoyaltyTier.gold);
       expect(account.nextTier, LoyaltyTier.platinum);
-      expect(account.pointsToNext, 2100);
-      for (var i = 1; i < account.entries.length; i++) {
-        expect(
-          account.entries[i].date.isAfter(account.entries[i - 1].date),
-          isFalse,
-        );
-      }
     });
 
-    test('a room without points is Silver with an empty history', () async {
-      Session.currentStay = demoStays[1];
-
-      final account = await ApiService().getLoyalty();
-
-      expect(account.entries, isEmpty);
-      expect(account.balance, 0);
-      expect(account.tier, LoyaltyTier.silver);
-      expect(account.pointsToNext, 1000);
-    });
-
-    test('5,000 earned points reach Platinum, the top tier', () {
-      final account = LoyaltyAccount(entries: [earnEntry(5000, 10)]);
+    test('without a server tier name the tier falls back to the points', () {
+      const account = LoyaltyAccount(tierPoints: 5000);
 
       expect(account.tier, LoyaltyTier.platinum);
       expect(account.nextTier, isNull);
@@ -54,12 +20,13 @@ void main() {
       expect(account.progress, 1.0);
     });
 
-    test('points earned over 12 months ago do not count for the tier', () {
-      final account = LoyaltyAccount(entries: [earnEntry(1500, 400)]);
+    test('a guest with no tier points is Silver and 1,000 points from Gold', () {
+      const account = LoyaltyAccount(balance: 150, tierPoints: 0);
 
-      expect(account.balance, 1500);
       expect(account.tier, LoyaltyTier.silver);
+      expect(account.nextTier, LoyaltyTier.gold);
       expect(account.pointsToNext, 1000);
+      expect(account.progress, 0.0);
     });
 
     test('points are formatted with thousand separators and signs', () {

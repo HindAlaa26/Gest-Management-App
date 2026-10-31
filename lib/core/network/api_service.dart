@@ -289,42 +289,78 @@ class ApiService {
     lastPushToken = token;
   }
 
-  static final Map<String, List<ChatMessage>> myMessagesByRoom = {
-    for (final entry in demoMessagesByRoom.entries)
-      entry.key: List<ChatMessage>.from(entry.value),
-  };
+  static const int _messagesPageSize = 100;
 
-  static bool failNextMessage = false;
+  static MessageDeliveryStatus _deliveryStatusFrom(Object? value) {
+    switch ('$value'.toLowerCase()) {
+      case 'queued':
+        return MessageDeliveryStatus.sending;
+      case 'read':
+        return MessageDeliveryStatus.read;
+      case 'failed':
+        return MessageDeliveryStatus.failed;
+      default:
+        return MessageDeliveryStatus.sent;
+    }
+  }
 
+  static ChatMessage _chatMessageFromJson(Map<String, dynamic> j) {
+    return ChatMessage(
+      id: j['id'].toString(),
+      text: (j['body'] as String?) ?? '',
+      fromGuest: '${j['direction']}'.toLowerCase() == 'inbound',
+      sentAt: _parseUtc(j['recordedAtUtc'] as String),
+      status: _deliveryStatusFrom(j['deliveryStatus']),
+    );
+  }
+
+  Future<List<ChatMessage>> _fetchMessagesPage(int page) async {
+    final json = await ApiClient.get(
+      '/api/guest-app/conversation/messages',
+      query: {'page': '$page', 'size': '$_messagesPageSize'},
+    );
+    final list = (json['data'] as List?) ?? const [];
+    final total =
+        ((json['pagenation'] as Map?)?['total'] as num?)?.toInt() ?? list.length;
+    _messagesTotal = total;
+    return list
+        .map((e) => _chatMessageFromJson(e as Map<String, dynamic>))
+        .toList();
+  }
+
+  static int _messagesTotal = 0;
+
+ 
   Future<List<ChatMessage>> getMessages() async {
-    await Future.delayed(const Duration(milliseconds: 500));
+    final first = await _fetchMessagesPage(1);
+    final lastPage = (_messagesTotal / _messagesPageSize).ceil();
+    if (lastPage <= 1) return first;
 
-    final room = Session.currentStay?.roomNumber ?? 'unknown';
-    final list = List<ChatMessage>.from(myMessagesByRoom[room] ?? const <ChatMessage>[]);
-    list.sort((a, b) => a.sentAt.compareTo(b.sentAt));
-    return list;
+    final last = await _fetchMessagesPage(lastPage);
+    final result = <ChatMessage>[];
+    if (last.length < _messagesPageSize) {
+      result.addAll(await _fetchMessagesPage(lastPage - 1));
+    }
+    result.addAll(last);
+    return result;
   }
 
   Future<ChatMessage> sendMessage(String text) async {
-    await Future.delayed(const Duration(milliseconds: 400));
-
-    if (failNextMessage) {
-      failNextMessage = false;
-      throw Exception('Message could not be sent');
-    }
-
-    final message = ChatMessage(
-      id: 'msg-${DateTime.now().microsecondsSinceEpoch}',
-      text: text,
+    final json = await ApiClient.post(
+      '/api/guest-app/conversation/messages',
+      {'body': text.trim()},
+    );
+    final id = (json['data'] as Map?)?['id']?.toString() ??
+        'msg-${DateTime.now().microsecondsSinceEpoch}';
+    return ChatMessage(
+      id: id,
+      text: text.trim(),
       fromGuest: true,
       sentAt: DateTime.now(),
       status: MessageDeliveryStatus.sent,
     );
-
-    final room = Session.currentStay?.roomNumber ?? 'unknown';
-    myMessagesByRoom.putIfAbsent(room, () => <ChatMessage>[]).add(message);
-    return message;
   }
+
   static final List<FeedbackItem> sentItems = <FeedbackItem>[];
   static final Map<String, List<FeedbackRecord>> myFeedbackByRoom = {
     for (final entry in demoFeedbackByRoom.entries)
