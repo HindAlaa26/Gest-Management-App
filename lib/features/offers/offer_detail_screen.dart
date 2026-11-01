@@ -20,9 +20,6 @@ class OfferDetailScreen extends StatefulWidget {
 }
 
 class _OfferDetailScreenState extends State<OfferDetailScreen> {
-  bool using = false;
-  String? error;
-
   @override
   void initState() {
     super.initState();
@@ -30,6 +27,7 @@ class _OfferDetailScreenState extends State<OfferDetailScreen> {
   }
 
   Future<void> markOpened() async {
+    if (!widget.offer.isNew) return;
     try {
       await ApiService().markOfferOpened(widget.offer.id);
     } catch (_) {
@@ -37,34 +35,12 @@ class _OfferDetailScreenState extends State<OfferDetailScreen> {
     }
   }
 
-  Future<void> useOffer() async {
-    if (using) return;
-
-    setState(() {
-      using = true;
-      error = null;
-    });
-
-    try {
-      final code = await ApiService().useOffer(widget.offer.id);
-      if (!mounted) return;
-      setState(() {
-        using = false;
-      });
-      await showOfferCodeSheet(context, offer: widget.offer, code: code);
-    } on OfferNotAvailableException {
-      if (!mounted) return;
-      setState(() {
-        using = false;
-        error = 'This offer is no longer available.';
-      });
-    } catch (_) {
-      if (!mounted) return;
-      setState(() {
-        using = false;
-        error = 'Could not get your code. Please try again.';
-      });
-    }
+  Future<void> showCode() {
+    return showOfferCodeSheet(
+      context,
+      offer: widget.offer,
+      code: widget.offer.code,
+    );
   }
 
   @override
@@ -138,42 +114,23 @@ class _OfferDetailScreenState extends State<OfferDetailScreen> {
                       ),
                     ],
                   ),
-                  const SizedBox(height: 16),
-                  const Divider(),
-                  const SizedBox(height: 12),
-                  Text(
-                    offer.description,
-                    style: textTheme.bodyLarge?.copyWith(
-                      color: AppColors.text,
-                      height: 1.4,
-                    ),
-                  ),
                 ],
               ),
             ),
-            if (available) ...[
+            if (available && offer.code.isNotEmpty) ...[
               const SizedBox(height: 24),
               const SectionLabel('How to use'),
               const SizedBox(height: 8),
               Text(
-                'Tap Use offer and show the code to our staff. Each offer can be used once.',
+                'Show your code to our staff. Each offer can be used once.',
                 style: textTheme.bodyMedium?.copyWith(color: AppColors.muted),
               ),
               const SizedBox(height: 20),
               LoadingButton(
-                label: 'Use offer',
-                loading: using,
-                onPressed: useOffer,
+                label: 'Show my code',
+                onPressed: showCode,
                 trailingIcon: Icons.qr_code_2_outlined,
               ),
-              if (error != null) ...[
-                const SizedBox(height: 12),
-                Text(
-                  error!,
-                  textAlign: TextAlign.center,
-                  style: textTheme.bodyMedium?.copyWith(color: AppColors.error),
-                ),
-              ],
             ],
           ],
         ),

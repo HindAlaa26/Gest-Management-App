@@ -116,11 +116,6 @@ class ApiService {
       entry.key: List<DataRequest>.from(entry.value),
   };
 
-  static final Map<String, List<Offer>> myOffersByRoom = {
-    for (final entry in demoOffersByRoom.entries)
-      entry.key: List<Offer>.from(entry.value),
-  };
-
   Future<List<Survey>> getSurveys() async {
     await Future.delayed(const Duration(milliseconds: 400));
 
@@ -150,45 +145,70 @@ class ApiService {
   }
 
   Future<List<Offer>> getOffers() async {
-    await Future.delayed(const Duration(milliseconds: 400));
-
-    final room = Session.currentStay?.roomNumber ?? 'unknown';
-    final list = List<Offer>.from(myOffersByRoom[room] ?? const <Offer>[]);
-    list.sort((a, b) => a.validUntil.compareTo(b.validUntil));
-    return list;
+    final json = await ApiClient.get('/api/guest-app/offers');
+    final list = (json['data'] as List?) ?? const [];
+    final offers = [
+      for (final item in list) offerFromJson(item as Map<String, dynamic>),
+    ];
+    offers.sort((a, b) => a.validUntil.compareTo(b.validUntil));
+    return offers;
   }
 
   Future<void> markOfferOpened(String id) async {
-    final room = Session.currentStay?.roomNumber ?? 'unknown';
-    final list = myOffersByRoom[room];
-    final index = list?.indexWhere((o) => o.id == id) ?? -1;
-    if (list == null || index == -1) throw OfferNotFoundException();
-
-    list[index] = list[index].copyOpened();
+    await ApiClient.post('/api/guest-app/offers/$id/open', null);
   }
 
-  Future<String> useOffer(String id) async {
-    await Future.delayed(const Duration(milliseconds: 500));
+  static Offer offerFromJson(Map<String, dynamic> j) {
+    final titleEn = '${j['offerTitleEn'] ?? ''}'.trim();
+    final titleAr = '${j['offerTitleAr'] ?? ''}'.trim();
+    final status = _offerStatusName(j['status']);
+    final openedAt = j['openedAtUtc'] as String?;
+    final redeemedAt = j['redeemedAtUtc'] as String?;
 
-    final room = Session.currentStay?.roomNumber ?? 'unknown';
-    final list = myOffersByRoom[room];
-    final index = list?.indexWhere((o) => o.id == id) ?? -1;
-    if (list == null || index == -1) throw OfferNotFoundException();
-    if (!list[index].isAvailable) throw OfferNotAvailableException();
-
-    list[index] = list[index].copyOpened();
-    return _offerCode(id);
-  }
-
-  static String _offerCode(String id) {
-    const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
-    final seed = id.codeUnits.fold<int>(
-      7,
-      (sum, unit) => (sum * 31 + unit) % 1000003,
+    return Offer(
+      id: '${j['id']}',
+      title: titleEn.isNotEmpty ? titleEn : titleAr,
+      type: _offerTypeFrom(j['offerType']),
+      validUntil: _parseUtc(j['expiredAtUtc'] as String),
+      code: '${j['redemptionCode'] ?? ''}',
+      opened: status == 'opened' || openedAt != null,
+      redeemedAt: redeemedAt != null
+          ? _parseUtc(redeemedAt)
+          : (status == 'redeemed' ? DateTime.now() : null),
+      expiredByServer: status == 'expired',
     );
-    final random = Random(seed);
-    final letters = List.generate(5, (_) => chars[random.nextInt(chars.length)]);
-    return 'GMS-${letters.join()}';
+  }
+
+  // The server may send an enum as its name or as its number.
+  static String _offerStatusName(Object? value) {
+    switch ('$value'.toLowerCase()) {
+      case '1':
+        return 'sent';
+      case '2':
+        return 'opened';
+      case '3':
+        return 'redeemed';
+      case '4':
+        return 'expired';
+      default:
+        return '$value'.toLowerCase();
+    }
+  }
+
+  static OfferType _offerTypeFrom(Object? value) {
+    switch ('$value'.toLowerCase()) {
+      case 'discount':
+      case '1':
+        return OfferType.discount;
+      case 'roomupgrade':
+      case '2':
+        return OfferType.roomUpgrade;
+      case 'bonuspoints':
+      case '3':
+        return OfferType.bonusPoints;
+      default:
+        return OfferType.freeItem;
+    }
   }
 
   Future<List<DataRequest>> getDataRequests() async {

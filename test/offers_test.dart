@@ -1,84 +1,95 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:gest_managment_app/core/data/demo_data.dart';
 import 'package:gest_managment_app/core/models/offer.dart';
 import 'package:gest_managment_app/core/network/api_service.dart';
 import 'package:gest_managment_app/core/utils/offer_labels.dart';
 
+Map<String, dynamic> dto({
+  String status = 'Sent',
+  String type = 'Discount',
+  String? openedAt,
+  String? redeemedAt,
+  DateTime? expires,
+}) {
+  return {
+    'id': 'dispatch-1',
+    'offerId': 'offer-1',
+    'guestProfileId': 'guest-1',
+    'offerTitleAr': 'عرض',
+    'offerTitleEn': 'Test - Spa 20%',
+    'offerType': type,
+    'status': status,
+    'redemptionCode': 'ABC123',
+    'deliveryChannel': 'InApp',
+    'sentAtUtc': '2026-11-01T10:00:00',
+    'openedAtUtc': openedAt,
+    'redeemedAtUtc': redeemedAt,
+    'expiredAtUtc': (expires ?? DateTime.now().add(const Duration(days: 5)))
+        .toUtc()
+        .toIso8601String(),
+  };
+}
+
 void main() {
-  setUp(() {
-    ApiService.myOffersByRoom
-      ..clear()
-      ..addAll({
-        for (final entry in demoOffersByRoom.entries)
-          entry.key: List<Offer>.from(entry.value),
-      });
-  });
+  group('offers from the server', () {
+    test('a new offer is available and marked new', () {
+      final offer = ApiService.offerFromJson(dto());
 
-  group('offers', () {
-    test('room 305 has three available offers, one used and one expired', () async {
-      Session.currentStay = demoStays.first;
-
-      final list = await ApiService().getOffers();
-
-      expect(list.where((o) => o.status == OfferStatus.available), hasLength(3));
-      expect(list.where((o) => o.status == OfferStatus.used), hasLength(1));
-      expect(list.where((o) => o.status == OfferStatus.expired), hasLength(1));
-      expect(list.where((o) => o.isNew), hasLength(2));
+      expect(offer.id, 'dispatch-1');
+      expect(offer.title, 'Test - Spa 20%');
+      expect(offer.code, 'ABC123');
+      expect(offer.type, OfferType.discount);
+      expect(offer.status, OfferStatus.available);
+      expect(offer.isNew, isTrue);
     });
 
-    test('a room without offers gets an empty list', () async {
-      Session.currentStay = demoStays[1];
+    test('an opened offer is no longer new', () {
+      final offer = ApiService.offerFromJson(
+        dto(status: 'Opened', openedAt: '2026-11-01T11:00:00'),
+      );
 
-      expect(await ApiService().getOffers(), isEmpty);
+      expect(offer.isAvailable, isTrue);
+      expect(offer.isNew, isFalse);
     });
 
-    test('opening an offer removes its new mark', () async {
-      Session.currentStay = demoStays.first;
+    test('a redeemed offer is used', () {
+      final offer = ApiService.offerFromJson(
+        dto(status: 'Redeemed', redeemedAt: '2026-11-01T12:00:00'),
+      );
 
-      await ApiService().markOfferOpened('offer-1');
-
-      final list = await ApiService().getOffers();
-      expect(list.firstWhere((o) => o.id == 'offer-1').isNew, isFalse);
-      expect(list.where((o) => o.isNew), hasLength(1));
+      expect(offer.status, OfferStatus.used);
+      expect(offerStatusText(offer), startsWith('Used on'));
     });
 
-    test('using an available offer returns the same code every time', () async {
-      Session.currentStay = demoStays.first;
+    test('an expired offer is expired, by server status or by date', () {
+      final byStatus = ApiService.offerFromJson(dto(status: 'Expired'));
+      final byDate = ApiService.offerFromJson(
+        dto(expires: DateTime.now().subtract(const Duration(days: 1))),
+      );
 
-      final code = await ApiService().useOffer('offer-1');
-
-      expect(code, startsWith('GMS-'));
-      expect(code, hasLength(9));
-      expect(await ApiService().useOffer('offer-1'), code);
+      expect(byStatus.status, OfferStatus.expired);
+      expect(byDate.status, OfferStatus.expired);
+      expect(offerStatusText(byDate), startsWith('Expired on'));
     });
 
-    test('used, expired and unknown offers cannot be used', () async {
-      Session.currentStay = demoStays.first;
-
+    test('types are read from the server name or number', () {
       expect(
-        () => ApiService().useOffer('offer-4'),
-        throwsA(isA<OfferNotAvailableException>()),
+        ApiService.offerFromJson(dto(type: 'RoomUpgrade')).type,
+        OfferType.roomUpgrade,
       );
       expect(
-        () => ApiService().useOffer('offer-5'),
-        throwsA(isA<OfferNotAvailableException>()),
+        ApiService.offerFromJson(dto(type: 'BonusPoints')).type,
+        OfferType.bonusPoints,
       );
       expect(
-        () => ApiService().useOffer('nope'),
-        throwsA(isA<OfferNotFoundException>()),
+        ApiService.offerFromJson(dto(type: '4')).type,
+        OfferType.freeItem,
       );
     });
 
-    test('status text says valid, used or expired', () async {
-      Session.currentStay = demoStays.first;
+    test('falls back to the Arabic title when there is no English one', () {
+      final json = dto()..['offerTitleEn'] = '';
 
-      final list = await ApiService().getOffers();
-      String textOf(String id) =>
-          offerStatusText(list.firstWhere((o) => o.id == id));
-
-      expect(textOf('offer-1'), startsWith('Valid until'));
-      expect(textOf('offer-4'), startsWith('Used on'));
-      expect(textOf('offer-5'), startsWith('Expired on'));
+      expect(ApiService.offerFromJson(json).title, 'عرض');
     });
   });
 }
