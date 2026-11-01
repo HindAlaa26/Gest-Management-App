@@ -7,13 +7,16 @@ class SurveyQuestion {
     required this.id,
     required this.type,
     required this.text,
+    this.isRequired = true,
   });
 
   final String id;
   final SurveyQuestionType type;
   final String text;
 
-   bool get needsRating => type != SurveyQuestionType.comment;
+  final bool isRequired;
+
+  bool get needsRating => type != SurveyQuestionType.comment;
 }
 
 class Survey {
@@ -31,7 +34,6 @@ class Survey {
   final String id;
   final String title;
 
-  /// What the survey is about, e.g. "After your check-out" or "About request REQ-1042".
   final String contextLabel;
   final List<SurveyQuestion> questions;
   final DateTime receivedAt;
@@ -58,7 +60,6 @@ class SurveyAnswer {
 
   final String questionId;
 
-  /// CSAT 1-5 or NPS 0-10; null for a comment question.
   final int? rating;
   final String? comment;
 }

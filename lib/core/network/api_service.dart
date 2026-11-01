@@ -104,44 +104,114 @@ class ApiService {
 
   static String? lastPushToken;
 
-  static final Map<String, List<Survey>> mySurveysByRoom = {
-    for (final entry in demoSurveysByRoom.entries)
-      entry.key: List<Survey>.from(entry.value),
-  };
-
-  static bool failNextSurveySubmit = false;
-
   static final Map<String, List<DataRequest>> myDataRequestsByRoom = {
     for (final entry in demoDataRequestsByRoom.entries)
       entry.key: List<DataRequest>.from(entry.value),
   };
 
   Future<List<Survey>> getSurveys() async {
-    await Future.delayed(const Duration(milliseconds: 400));
+    final json = await ApiClient.get('/api/guest-app/surveys');
+    final pending = (json['data'] as List?) ?? const [];
 
-    final room = Session.currentStay?.roomNumber ?? 'unknown';
-    final list = List<Survey>.from(mySurveysByRoom[room] ?? const <Survey>[]);
-    list.sort((a, b) => b.receivedAt.compareTo(a.receivedAt));
-    return list;
+    final loaded = await Future.wait(
+      pending.map((item) => _loadSurvey(item as Map<String, dynamic>)),
+    );
+    final surveys = [for (final survey in loaded) ?survey];
+    surveys.sort((a, b) => b.receivedAt.compareTo(a.receivedAt));
+    return surveys;
   }
 
-   Future<void> submitSurvey(String id, List<SurveyAnswer> answers) async {
-    await Future.delayed(const Duration(milliseconds: 600));
+  Future<int> getWaitingSurveyCount() async {
+    final json = await ApiClient.get('/api/guest-app/surveys');
+    return ((json['data'] as List?) ?? const []).length;
+  }
 
-    if (failNextSurveySubmit) {
-      failNextSurveySubmit = false;
-      throw Exception('Could not send answers');
+  Future<Survey?> _loadSurvey(Map<String, dynamic> pending) async {
+    try {
+      final json = await ApiClient.get(
+        '/api/guest-app/surveys/${pending['dispatchId']}',
+      );
+      final survey = surveyFromJson(
+        json['data'] as Map<String, dynamic>,
+        receivedAt: _parseUtc(pending['dispatchedAtUtc'] as String),
+      );
+      // A survey without questions cannot be answered, so it is not shown.
+      return survey.questions.isEmpty ? null : survey;
+    } on ApiException catch (error) {
+      if (error.statusCode == 404) return null;
+      rethrow;
+    }
+  }
+
+  static Survey surveyFromJson(
+    Map<String, dynamic> j, {
+    required DateTime receivedAt,
+  }) {
+    String pick(String en, String ar) {
+      final english = '${j[en] ?? ''}'.trim();
+      return english.isNotEmpty ? english : '${j[ar] ?? ''}'.trim();
     }
 
-    final room = Session.currentStay?.roomNumber ?? 'unknown';
-    final list = mySurveysByRoom[room];
-    final index = list?.indexWhere((s) => s.id == id) ?? -1;
-    if (list == null || index == -1) throw SurveyNotFoundException();
-    if (list[index].status == SurveyStatus.answered) {
-      throw SurveyAlreadyAnsweredException();
-    }
+    final rawQuestions = [
+      for (final q in (j['questions'] as List?) ?? const [])
+        q as Map<String, dynamic>,
+    ]..sort((a, b) => ((a['sortOrder'] as num?) ?? 0)
+        .compareTo((b['sortOrder'] as num?) ?? 0));
 
-    list[index] = list[index].copyAnswered(DateTime.now(), answers);
+    return Survey(
+      id: '${j['dispatchId']}',
+      title: pick('titleEn', 'titleAr'),
+      contextLabel: pick('descriptionEn', 'descriptionAr'),
+      questions: [
+        for (final q in rawQuestions)
+          SurveyQuestion(
+            id: '${q['id']}',
+            type: _surveyQuestionTypeFrom(q['questionType']),
+            text: '${q['textEn'] ?? ''}'.trim().isNotEmpty
+                ? '${q['textEn']}'.trim()
+                : '${q['textAr'] ?? ''}'.trim(),
+            isRequired: q['isRequired'] != false,
+          ),
+      ],
+      receivedAt: receivedAt,
+      status: j['isAlreadyAnswered'] == true
+          ? SurveyStatus.answered
+          : SurveyStatus.waiting,
+    );
+  }
+
+  static SurveyQuestionType _surveyQuestionTypeFrom(Object? value) {
+    switch ('$value'.toLowerCase()) {
+      case 'csat':
+        return SurveyQuestionType.csat;
+      case 'nps':
+        return SurveyQuestionType.nps;
+      default:
+        return SurveyQuestionType.comment;
+    }
+  }
+
+  Future<void> submitSurvey(String id, List<SurveyAnswer> answers) async {
+    final body = {
+      'answers': [
+        for (final answer in answers)
+          if (answer.rating != null ||
+              (answer.comment?.trim().isNotEmpty ?? false))
+            {
+              'questionId': answer.questionId,
+              'numericValue': answer.rating,
+              'textValue': answer.comment?.trim(),
+            },
+      ],
+    };
+
+    try {
+      await ApiClient.post('/api/guest-app/surveys/$id/submit', body);
+    } on ApiException catch (error) {
+      if (error.statusCode == 409) throw SurveyAlreadyAnsweredException();
+      if (error.statusCode == 404) throw SurveyNotFoundException();
+      rethrow;
+    }
   }
 
   Future<List<Offer>> getOffers() async {
@@ -179,7 +249,6 @@ class ApiService {
     );
   }
 
-  // The server may send an enum as its name or as its number.
   static String _offerStatusName(Object? value) {
     switch ('$value'.toLowerCase()) {
       case '1':

@@ -78,10 +78,11 @@ class SurveyAnswersScreen extends StatelessWidget {
         child: ListView(
           padding: const EdgeInsets.fromLTRB(20, 16, 20, 28),
           children: [
-            Text(
-              survey.contextLabel,
-              style: textTheme.bodyMedium?.copyWith(color: AppColors.muted),
-            ),
+                        if (survey.contextLabel.isNotEmpty)
+              Text(
+                survey.contextLabel,
+                style: textTheme.bodyMedium?.copyWith(color: AppColors.muted),
+              ),
             if (answeredAt != null) ...[
               const SizedBox(height: 4),
               Text(

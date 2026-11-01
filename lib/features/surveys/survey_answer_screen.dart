@@ -30,8 +30,11 @@ class _SurveyAnswerScreenState extends State<SurveyAnswerScreen> {
   List<SurveyQuestion> get questions => widget.survey.questions;
   SurveyQuestion get current => questions[index];
   bool get isLast => index == questions.length - 1;
-  bool get canProceed =>
-      !current.needsRating || ratings.containsKey(current.id);
+    bool get canProceed {
+    if (!current.isRequired) return true;
+    if (current.needsRating) return ratings.containsKey(current.id);
+    return comments[current.id]?.text.trim().isNotEmpty ?? false;
+  }
   bool get hasProgress =>
       ratings.isNotEmpty ||
       comments.values.any((c) => c.text.trim().isNotEmpty);
@@ -191,7 +194,11 @@ class _SurveyAnswerScreenState extends State<SurveyAnswerScreen> {
           maxLines: 6,
           textCapitalization: TextCapitalization.sentences,
           onChanged: (_) => setState(() {}),
-          decoration: const InputDecoration(hintText: 'Your comment (optional)'),
+          decoration: InputDecoration(
+            hintText: question.isRequired
+                ? 'Your comment'
+                : 'Your comment (optional)',
+          ),
         );
     }
   }

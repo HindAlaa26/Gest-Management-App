@@ -64,13 +64,15 @@ class SurveyCard extends StatelessWidget {
                         fontWeight: FontWeight.w700,
                       ),
                     ),
-                    const SizedBox(height: 2),
-                    Text(
-                      survey.contextLabel,
-                      style: textTheme.bodySmall?.copyWith(
-                        color: AppColors.muted,
+                                        if (survey.contextLabel.isNotEmpty) ...[
+                      const SizedBox(height: 2),
+                      Text(
+                        survey.contextLabel,
+                        style: textTheme.bodySmall?.copyWith(
+                          color: AppColors.muted,
+                        ),
                       ),
-                    ),
+                    ],
                   ],
                 ),
               ),
