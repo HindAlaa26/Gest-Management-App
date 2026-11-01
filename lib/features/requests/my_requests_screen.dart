@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 
 import 'package:gest_managment_app/core/models/guest_request.dart';
@@ -27,10 +29,51 @@ class _MyRequestsScreenState extends State<MyRequestsScreen> {
   List<GuestRequest> requests = const [];
   int filterIndex = 0;
 
+  Timer? pollTimer;
+  bool polling = false;
+
   @override
   void initState() {
     super.initState();
     load();
+    pollTimer = Timer.periodic(
+      const Duration(seconds: 10),
+      (_) => pollRequests(),
+    );
+  }
+
+  @override
+  void dispose() {
+    pollTimer?.cancel();
+    super.dispose();
+  }
+
+
+  Future<void> pollRequests() async {
+    if (polling || loading || error != null || !mounted) return;
+    if (ModalRoute.of(context)?.isCurrent == false) return;
+    if (!requests.any((r) => r.status.isActive)) return;
+    polling = true;
+    try {
+      final fresh = await ApiService().getMyRequests();
+      if (!mounted) return;
+
+      var same = fresh.length == requests.length;
+      for (var i = 0; same && i < fresh.length; i++) {
+        same = fresh[i].reference == requests[i].reference &&
+            fresh[i].status == requests[i].status &&
+            fresh[i].urgency == requests[i].urgency;
+      }
+      if (same) return;
+
+      setState(() {
+        requests = fresh;
+      });
+    } catch (_) {
+      // Quiet: the next check tries again.
+    } finally {
+      polling = false;
+    }
   }
 
   Future<void> load() async {

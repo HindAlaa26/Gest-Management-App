@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 
 import 'package:gest_managment_app/core/models/guest_request.dart';
@@ -44,16 +46,47 @@ class _RequestDetailsScreenState extends State<RequestDetailsScreen> {
   bool submitting = false;
   String? ratingError;
 
+  Timer? pollTimer;
+  bool polling = false;
+
   @override
   void initState() {
     super.initState();
     load();
+    pollTimer = Timer.periodic(
+      const Duration(seconds: 10),
+      (_) => pollRequest(),
+    );
   }
 
   @override
   void dispose() {
+    pollTimer?.cancel();
     commentController.dispose();
     super.dispose();
+  }
+
+
+  Future<void> pollRequest() async {
+    final current = request;
+    if (current == null || polling || loading || submitting || !mounted) return;
+    if (!current.status.isActive) return;
+    polling = true;
+    try {
+      final fresh = await ApiService().getRequest(widget.reference);
+      if (!mounted) return;
+      if (fresh.status == current.status &&
+          fresh.history.length == current.history.length) {
+        return;
+      }
+      setState(() {
+        request = fresh;
+      });
+    } catch (_) {
+      // Quiet: the next check tries again.
+    } finally {
+      polling = false;
+    }
   }
 
   Future<void> load() async {
