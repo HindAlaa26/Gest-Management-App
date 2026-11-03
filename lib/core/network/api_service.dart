@@ -307,7 +307,14 @@ class ApiService {
   }
 
   Future<List<DataRequest>> _loadRemovals() async {
-    final json = await ApiClient.get('/api/guest-app/anonymization');
+    final Map<String, dynamic> json;
+    try {
+      json = await ApiClient.get('/api/guest-app/anonymization');
+    } on ApiException catch (error) {
+      // Not deployed yet on the server: show the page with no deletion requests.
+      if (error.statusCode == 404) return const <DataRequest>[];
+      rethrow;
+    }
     final rows = (json['data'] as List?) ?? const [];
     return [
       for (final row in rows)
