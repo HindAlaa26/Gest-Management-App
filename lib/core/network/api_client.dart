@@ -52,6 +52,54 @@ class ApiClient {
     return _send('DELETE', path, body: body, auth: auth);
   }
 
+  static Future<List<int>> getBytes(
+    String path, {
+    Map<String, String>? query,
+    Map<String, String>? headers,
+  }) async {
+    final uri = Uri.parse('${ApiConfig.baseUrl}$path')
+        .replace(queryParameters: query);
+
+    final request = http.Request('GET', uri);
+    request.headers['Accept'] = '*/*';
+    final token = Session.token;
+    if (token != null) {
+      request.headers['Authorization'] = 'Bearer $token';
+    }
+    if (headers != null) request.headers.addAll(headers);
+
+    final http.Response response;
+    try {
+      final streamed = await request.send().timeout(const Duration(seconds: 60));
+      response = await http.Response.fromStream(streamed);
+    } on TimeoutException {
+      throw NetworkException();
+    } on SocketException {
+      throw NetworkException();
+    } on http.ClientException {
+      throw NetworkException();
+    }
+
+    if (response.statusCode >= 200 && response.statusCode < 300) {
+      return response.bodyBytes;
+    }
+
+    var text = 'Request failed';
+    try {
+      final decoded = jsonDecode(utf8.decode(response.bodyBytes));
+      if (decoded is Map<String, dynamic>) {
+        final error = decoded['error'];
+        final message = decoded['message'];
+        if (error is String && error.isNotEmpty) {
+          text = error;
+        } else if (message is String && message.isNotEmpty) {
+          text = message;
+        }
+      }
+    } catch (_) {}
+    throw ApiException(response.statusCode, text);
+  }
+
   static Future<Map<String, dynamic>> _send(
     String method,
     String path, {

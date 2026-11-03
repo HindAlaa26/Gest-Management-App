@@ -8,11 +8,11 @@ import 'package:gest_managment_app/core/widgets/icon_circle.dart';
 import 'package:gest_managment_app/core/widgets/royal_card.dart';
 
 class DataRequestCard extends StatelessWidget {
-  const DataRequestCard({super.key, required this.request, this.onCopyLink});
+  const DataRequestCard({super.key, required this.request, this.onDownload});
 
   final DataRequest request;
 
-  final VoidCallback? onCopyLink;
+  final VoidCallback? onDownload;
 
   @override
   Widget build(BuildContext context) {
@@ -66,13 +66,13 @@ class DataRequestCard extends StatelessWidget {
             dataRequestNote(request),
             style: textTheme.bodyMedium?.copyWith(color: AppColors.text),
           ),
-          if (onCopyLink != null) ...[
+          if (onDownload != null) ...[
             const SizedBox(height: 12),
             SizedBox(
               width: double.infinity,
               child: OutlinedButton(
-                onPressed: onCopyLink,
-                child: const Text('Copy download link'),
+                onPressed: onDownload,
+                child: const Text('Download my data'),
               ),
             ),
           ],

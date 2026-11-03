@@ -9,7 +9,6 @@ class DataRequest {
     required this.status,
     required this.requestedAt,
     this.completedAt,
-    this.downloadUrl,
     this.downloadExpiresAt,
   });
 
@@ -19,7 +18,6 @@ class DataRequest {
   final DateTime requestedAt;
   final DateTime? completedAt;
 
-  final String? downloadUrl;
   final DateTime? downloadExpiresAt;
 
   bool get isActive =>
@@ -36,7 +34,6 @@ class DataRequest {
   bool get canDownload =>
       type == DataRequestType.export &&
       status == DataRequestStatus.done &&
-      downloadUrl != null &&
       !linkExpired;
 }
 

@@ -1,64 +1,92 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:gest_managment_app/core/data/demo_data.dart';
 import 'package:gest_managment_app/core/models/data_request.dart';
 import 'package:gest_managment_app/core/network/api_service.dart';
 import 'package:gest_managment_app/core/utils/data_request_labels.dart';
 
+Map<String, dynamic> _export(String status, {String? ready, String? expires}) {
+  return {
+    'exportId': 'e1',
+    'status': status,
+    'requestedAtUtc': '2026-11-01T09:00:00',
+    'readyAtUtc': ready,
+    'expiresAtUtc': expires,
+  };
+}
+
 void main() {
-  setUp(() {
-    ApiService.myDataRequestsByRoom
-      ..clear()
-      ..addAll({
-        for (final entry in demoDataRequestsByRoom.entries)
-          entry.key: List<DataRequest>.from(entry.value),
-      });
+  group('my data: copy of my data', () {
+    test('a ready copy can be downloaded until it expires', () {
+      final expires = DateTime.now().toUtc().add(const Duration(days: 2));
+      final request = ApiService.dataRequestFromExportJson(
+        _export(
+          'Ready',
+          ready: '2026-11-01T09:05:00',
+          expires: expires.toIso8601String(),
+        ),
+      );
+
+      expect(request.type, DataRequestType.export);
+      expect(request.status, DataRequestStatus.done);
+      expect(request.canDownload, isTrue);
+      expect(dataRequestNote(request), startsWith('Your copy is ready'));
+    });
+
+    test('an expired copy cannot be downloaded', () {
+      final request = ApiService.dataRequestFromExportJson(
+        _export('Expired'),
+      );
+
+      expect(request.linkExpired, isTrue);
+      expect(request.canDownload, isFalse);
+      expect(dataRequestNote(request), contains('expired'));
+    });
+
+    test('requested and processing copies are active', () {
+      for (final status in ['Requested', 'Processing', 'RetryPending']) {
+        final request = ApiService.dataRequestFromExportJson(_export(status));
+        expect(request.isActive, isTrue, reason: status);
+        expect(request.canDownload, isFalse, reason: status);
+      }
+    });
+
+    test('failed and revoked copies show as failed', () {
+      for (final status in ['Failed', 'Revoked']) {
+        final request = ApiService.dataRequestFromExportJson(_export(status));
+        expect(request.status, DataRequestStatus.failed, reason: status);
+      }
+    });
   });
 
-  group('my data', () {
-    test('room 305 has a ready copy and an expired one, newest first', () async {
-      Session.currentStay = demoStays.first;
+  group('my data: delete my data', () {
+    Map<String, dynamic> removal(String status, {String? done}) => {
+          'requestId': 'r1',
+          'status': status,
+          'requestedAtUtc': '2026-11-01T09:00:00',
+          'completedAtUtc': done,
+        };
 
-      final list = await ApiService().getDataRequests();
-
-      expect(list, hasLength(2));
-      expect(list.first.canDownload, isTrue);
-      expect(list.last.linkExpired, isTrue);
-      expect(list.last.canDownload, isFalse);
-      expect(dataRequestNote(list.first), startsWith('Your copy is ready'));
-      expect(dataRequestNote(list.last), contains('expired'));
+    test('requested, queued and processing are active', () {
+      for (final status in ['Requested', 'Queued', 'Processing', 'RetryPending']) {
+        final request = ApiService.dataRequestFromRemovalJson(removal(status));
+        expect(request.type, DataRequestType.delete, reason: status);
+        expect(request.isActive, isTrue, reason: status);
+      }
     });
 
-    test('room 412 has a deletion in progress', () async {
-      Session.currentStay = demoStays[1];
-
-      final list = await ApiService().getDataRequests();
-
-      expect(list.single.type, DataRequestType.delete);
-      expect(list.single.isActive, isTrue);
-      expect(dataRequestNote(list.single), startsWith('We will finish by'));
-    });
-
-    test('a new copy request starts as received and shows first', () async {
-      Session.currentStay = demoStays[2];
-
-      final request = await ApiService().requestDataExport();
-
-      expect(request.status, DataRequestStatus.pending);
-      final list = await ApiService().getDataRequests();
-      expect(list.first.id, request.id);
-    });
-
-    test('a second request of the same type while one is active fails', () async {
-      Session.currentStay = demoStays[2];
-
-      await ApiService().requestDataDeletion();
-
-      expect(
-        () => ApiService().requestDataDeletion(),
-        throwsA(isA<DataRequestInProgressException>()),
+    test('completed is done and failed or cancelled is failed', () {
+      final done = ApiService.dataRequestFromRemovalJson(
+        removal('Completed', done: '2026-11-01T10:00:00'),
       );
-      await ApiService().requestDataExport();
-      expect(await ApiService().getDataRequests(), hasLength(2));
+      expect(done.status, DataRequestStatus.done);
+      expect(done.completedAt, isNotNull);
+
+      for (final status in ['Failed', 'Cancelled']) {
+        expect(
+          ApiService.dataRequestFromRemovalJson(removal(status)).status,
+          DataRequestStatus.failed,
+          reason: status,
+        );
+      }
     });
 
     test('the deletion deadline is 24 hours after the request', () {

@@ -77,6 +77,7 @@ class ApiService {
   static _Cached<LoyaltyAccount>? _loyaltyCache;
 
   static void clearCache() {
+    _exportIds.clear();
     myNotificationsByRoom.clear();
     _eventsCache = null;
     _restaurantsCache = null;
@@ -106,10 +107,7 @@ class ApiService {
 
   static String? lastPushToken;
 
-  static final Map<String, List<DataRequest>> myDataRequestsByRoom = {
-    for (final entry in demoDataRequestsByRoom.entries)
-      entry.key: List<DataRequest>.from(entry.value),
-  };
+  static final List<String> _exportIds = <String>[];
 
   Future<List<Survey>> getSurveys() async {
     final json = await ApiClient.get('/api/guest-app/surveys');
@@ -283,44 +281,118 @@ class ApiService {
   }
 
   Future<List<DataRequest>> getDataRequests() async {
-    await Future.delayed(const Duration(milliseconds: 400));
-
-    final room = Session.currentStay?.roomNumber ?? 'unknown';
-    final list = List<DataRequest>.from(
-      myDataRequestsByRoom[room] ?? const <DataRequest>[],
-    );
+    final results = await Future.wait([_loadExports(), _loadRemovals()]);
+    final list = <DataRequest>[...results[0], ...results[1]];
     list.sort((a, b) => b.requestedAt.compareTo(a.requestedAt));
     return list;
   }
 
+  Future<List<DataRequest>> _loadExports() async {
+    final loaded = <DataRequest>[];
+    for (final id in List<String>.from(_exportIds)) {
+      try {
+        final json = await ApiClient.get('/api/guest-app/exports/$id');
+        loaded.add(
+          dataRequestFromExportJson(json['data'] as Map<String, dynamic>),
+        );
+      } on ApiException catch (error) {
+        if (error.statusCode == 404) {
+          _exportIds.remove(id);
+        } else {
+          rethrow;
+        }
+      }
+    }
+    return loaded;
+  }
+
+  Future<List<DataRequest>> _loadRemovals() async {
+    final json = await ApiClient.get('/api/guest-app/anonymization');
+    final rows = (json['data'] as List?) ?? const [];
+    return [
+      for (final row in rows)
+        dataRequestFromRemovalJson(row as Map<String, dynamic>),
+    ];
+  }
+
   Future<DataRequest> requestDataExport() async {
-    await Future.delayed(const Duration(milliseconds: 600));
-    return _addDataRequest(DataRequestType.export);
+    final json = await ApiClient.post(
+      '/api/guest-app/exports',
+      <String, dynamic>{},
+    );
+    final request = dataRequestFromExportJson(
+      json['data'] as Map<String, dynamic>,
+    );
+    if (!_exportIds.contains(request.id)) _exportIds.add(request.id);
+    return request;
   }
 
   Future<DataRequest> requestDataDeletion() async {
-    await Future.delayed(const Duration(milliseconds: 600));
-    return _addDataRequest(DataRequestType.delete);
+    final json = await ApiClient.post(
+      '/api/guest-app/anonymization',
+      <String, dynamic>{},
+    );
+    return dataRequestFromRemovalJson(json['data'] as Map<String, dynamic>);
   }
 
-  DataRequest _addDataRequest(DataRequestType type) {
-    final room = Session.currentStay?.roomNumber ?? 'unknown';
-    final list = myDataRequestsByRoom.putIfAbsent(
-      room,
-      () => <DataRequest>[],
-    );
-    if (list.any((r) => r.type == type && r.isActive)) {
-      throw DataRequestInProgressException();
+  static DataRequestStatus _exportStatusFrom(Object? value) {
+    switch ('$value'.toLowerCase()) {
+      case 'processing':
+      case 'retrypending':
+        return DataRequestStatus.inProgress;
+      case 'ready':
+      case 'expired':
+        return DataRequestStatus.done;
+      case 'failed':
+      case 'revoked':
+        return DataRequestStatus.failed;
+      default:
+        return DataRequestStatus.pending;
     }
+  }
 
-    final request = DataRequest(
-      id: 'data-${DateTime.now().microsecondsSinceEpoch}',
-      type: type,
-      status: DataRequestStatus.pending,
-      requestedAt: DateTime.now(),
+  static DataRequestStatus _removalStatusFrom(Object? value) {
+    switch ('$value'.toLowerCase()) {
+      case 'processing':
+      case 'retrypending':
+        return DataRequestStatus.inProgress;
+      case 'completed':
+        return DataRequestStatus.done;
+      case 'failed':
+      case 'cancelled':
+        return DataRequestStatus.failed;
+      default:
+        return DataRequestStatus.pending;
+    }
+  }
+
+  static DataRequest dataRequestFromExportJson(Map<String, dynamic> j) {
+    final isExpired = '${j['status']}'.toLowerCase() == 'expired';
+    final readyRaw = j['readyAtUtc'] as String?;
+    final expiresRaw = j['expiresAtUtc'] as String?;
+    var expires = expiresRaw == null ? null : _parseUtc(expiresRaw);
+    if (isExpired && (expires == null || expires.isAfter(DateTime.now()))) {
+      expires = DateTime.now().subtract(const Duration(seconds: 1));
+    }
+    return DataRequest(
+      id: '${j['exportId']}',
+      type: DataRequestType.export,
+      status: _exportStatusFrom(j['status']),
+      requestedAt: _parseUtc(j['requestedAtUtc'] as String),
+      completedAt: readyRaw == null ? null : _parseUtc(readyRaw),
+      downloadExpiresAt: expires,
     );
-    list.add(request);
-    return request;
+  }
+
+  static DataRequest dataRequestFromRemovalJson(Map<String, dynamic> j) {
+    final completedRaw = j['completedAtUtc'] as String?;
+    return DataRequest(
+      id: '${j['requestId']}',
+      type: DataRequestType.delete,
+      status: _removalStatusFrom(j['status']),
+      requestedAt: _parseUtc(j['requestedAtUtc'] as String),
+      completedAt: completedRaw == null ? null : _parseUtc(completedRaw),
+    );
   }
 
   Future<LoyaltyAccount> getLoyalty({bool refresh = false}) async {

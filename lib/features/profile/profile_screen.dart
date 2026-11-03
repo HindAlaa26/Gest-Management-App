@@ -1,10 +1,12 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import 'package:gest_managment_app/core/models/data_request.dart';
 import 'package:gest_managment_app/core/models/guest_stay.dart';
 import 'package:gest_managment_app/core/network/api_service.dart';
+import 'package:gest_managment_app/core/network/data_export_file.dart';
 import 'package:gest_managment_app/core/theme/theme.dart';
 import 'package:gest_managment_app/core/utils/helpers.dart';
 import 'package:gest_managment_app/core/widgets/data_request_card.dart';
@@ -28,11 +30,35 @@ class _ProfileScreenState extends State<ProfileScreen> {
   bool sending = false;
   String? error;
   List<DataRequest> requests = const [];
+  bool downloading = false;
+  Timer? poll;
 
   @override
   void initState() {
     super.initState();
     load();
+    poll = Timer.periodic(
+      const Duration(seconds: 10),
+      (_) => refreshQuietly(),
+    );
+  }
+
+  @override
+  void dispose() {
+    poll?.cancel();
+    super.dispose();
+  }
+
+  Future<void> refreshQuietly() async {
+    if (!mounted || loading || sending || downloading) return;
+    if (!requests.any((r) => r.isActive)) return;
+    try {
+      final result = await ApiService().getDataRequests();
+      if (!mounted) return;
+      setState(() {
+        requests = result;
+      });
+    } catch (_) {}
   }
 
   Future<void> load() async {
@@ -132,13 +158,28 @@ class _ProfileScreenState extends State<ProfileScreen> {
     }
   }
 
-  Future<void> copyLink(DataRequest request) async {
-    final url = request.downloadUrl;
-    if (url == null) return;
-
-    await Clipboard.setData(ClipboardData(text: url));
-    if (!mounted) return;
-    showMessage('Download link copied.');
+  Future<void> downloadCopy(DataRequest request) async {
+    if (downloading) return;
+    setState(() {
+      downloading = true;
+    });
+    try {
+      final opened = await DataExportFile.open(request.id);
+      if (!mounted) return;
+      if (!opened) {
+        showMessage('Your file was saved, but no app on this phone could open it.');
+      }
+    } catch (_) {
+      if (!mounted) return;
+      showMessage('Could not download your copy. Please try again.');
+      await load();
+    } finally {
+      if (mounted) {
+        setState(() {
+          downloading = false;
+        });
+      }
+    }
   }
 
   Widget buildGuestCard(GuestStay stay) {
@@ -208,7 +249,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         for (final request in requests) ...[
           DataRequestCard(
             request: request,
-            onCopyLink: request.canDownload ? () => copyLink(request) : null,
+            onDownload: request.canDownload ? () => downloadCopy(request) : null,
           ),
           const SizedBox(height: 12),
         ],
@@ -232,7 +273,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             physics: const AlwaysScrollableScrollPhysics(),
             padding: const EdgeInsets.fromLTRB(20, 16, 20, 28),
             children: [
-              if (sending)
+              if (sending || downloading)
                 const Padding(
                   padding: EdgeInsets.only(bottom: 12),
                   child: LinearProgressIndicator(color: AppColors.teal),
