@@ -1,6 +1,9 @@
 import 'dart:async';
 import 'dart:convert';
 
+import 'package:flutter/foundation.dart'
+    show TargetPlatform, defaultTargetPlatform, kIsWeb;
+
 import 'package:gest_managment_app/core/data/demo_data.dart';
 import 'package:gest_managment_app/core/network/api_client.dart';
 import 'package:gest_managment_app/core/network/api_config.dart';
@@ -45,6 +48,7 @@ class Session {
   }
 
   static void signOut() {
+    ApiService.unregisterPushToken();
     currentStay = null;
     token = null;
     propertyId = null;
@@ -73,6 +77,7 @@ class ApiService {
   static _Cached<LoyaltyAccount>? _loyaltyCache;
 
   static void clearCache() {
+    myNotificationsByRoom.clear();
     _eventsCache = null;
     _restaurantsCache = null;
     _loyaltyCache = null;
@@ -96,10 +101,8 @@ class ApiService {
     ]);
   }
 
-  static final Map<String, List<AppNotification>> myNotificationsByRoom = {
-    for (final entry in demoNotificationsByRoom.entries)
-      entry.key: List<AppNotification>.from(entry.value),
-  };
+  static final Map<String, List<AppNotification>> myNotificationsByRoom =
+      <String, List<AppNotification>>{};
 
   static String? lastPushToken;
 
@@ -376,8 +379,6 @@ class ApiService {
   }
 
   Future<List<AppNotification>> getNotifications() async {
-    await Future.delayed(const Duration(milliseconds: 400));
-
     final room = Session.currentStay?.roomNumber ?? 'unknown';
     final list = List<AppNotification>.from(
       myNotificationsByRoom[room] ?? const <AppNotification>[],
@@ -388,8 +389,6 @@ class ApiService {
 
   
   Future<void> markNotificationRead(String id) async {
-    await Future.delayed(const Duration(milliseconds: 150));
-
     final room = Session.currentStay?.roomNumber ?? 'unknown';
     final list = myNotificationsByRoom[room];
     if (list == null) return;
@@ -398,8 +397,6 @@ class ApiService {
   }
 
   Future<void> markAllNotificationsRead() async {
-    await Future.delayed(const Duration(milliseconds: 150));
-
     final room = Session.currentStay?.roomNumber ?? 'unknown';
     final list = myNotificationsByRoom[room];
     if (list == null) return;
@@ -409,8 +406,6 @@ class ApiService {
   }
 
   Future<void> deleteNotification(String id) async {
-    await Future.delayed(const Duration(milliseconds: 150));
-
     final room = Session.currentStay?.roomNumber ?? 'unknown';
     myNotificationsByRoom[room]?.removeWhere((n) => n.id == id);
   }
@@ -422,10 +417,27 @@ class ApiService {
     list.insert(0, notification);
   }
 
-  Future<void> registerPushToken(String token) async {
-    await Future.delayed(const Duration(milliseconds: 300));
+  static String _pushPlatform() {
+    if (kIsWeb) return 'Web';
+    return defaultTargetPlatform == TargetPlatform.iOS ? 'iOS' : 'Android';
+  }
 
+  Future<void> registerPushToken(String token) async {
     lastPushToken = token;
+    try {
+      await ApiClient.post('/api/guest-app/push-tokens', {
+        'token': token,
+        'platform': _pushPlatform(),
+      });
+    } catch (_) {}
+  }
+
+  static void unregisterPushToken() {
+    final token = lastPushToken;
+    if (token == null || Session.token == null) return;
+    lastPushToken = null;
+    ApiClient.delete('/api/guest-app/push-tokens', {'token': token})
+        .then((_) {}, onError: (_) {});
   }
 
   static const int _messagesPageSize = 100;
