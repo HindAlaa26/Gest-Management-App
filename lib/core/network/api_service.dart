@@ -632,7 +632,11 @@ class ApiService {
 
     final query = <String, String>{'from': _ymd(DateTime.now())};
     final checkout = Session.currentStay?.checkout;
-    if (checkout != null) query['to'] = _ymd(checkout);
+    final today = DateTime.now();
+    final todayOnly = DateTime(today.year, today.month, today.day);
+    if (checkout != null && !DateTime(checkout.year, checkout.month, checkout.day).isBefore(todayOnly)) {
+      query['to'] = _ymd(checkout);
+    }
 
     final json = await ApiClient.get(
       '/api/public/properties/$propertyId/events',
