@@ -16,6 +16,7 @@ import 'package:gest_managment_app/core/models/event_item.dart';
 import 'package:gest_managment_app/core/models/feedback_item.dart';
 import 'package:gest_managment_app/core/models/feedback_record.dart';
 import 'package:gest_managment_app/core/models/guest_request.dart';
+import 'package:gest_managment_app/core/network/session_store.dart';
 import 'package:gest_managment_app/core/models/guest_stay.dart';
 import 'package:gest_managment_app/core/models/loyalty.dart';
 import 'package:gest_managment_app/core/models/offer.dart';
@@ -35,6 +36,27 @@ class Session {
     guestProfileId = claims['guest_profile_id'] as String?;
   }
 
+  static bool isExpiredJwt(String jwt, {DateTime? now}) {
+    final exp = _decodeClaims(jwt)['exp'];
+    if (exp is! num) return true;
+    final expiry = DateTime.fromMillisecondsSinceEpoch(exp.toInt() * 1000, isUtc: true);
+    return !(now ?? DateTime.now().toUtc()).isBefore(expiry);
+  }
+
+  static Future<bool> restore() async {
+    final saved = await SessionStore.load();
+    if (saved == null) return false;
+    if (isExpiredJwt(saved.token)) {
+      await SessionStore.clear();
+      return false;
+    }
+    applyToken(saved.token);
+    propertyName = saved.propertyName;
+    currentStay = saved.stay;
+    unawaited(ApiService.prefetch());
+    return true;
+  }
+
   static Map<String, dynamic> _decodeClaims(String jwt) {
     try {
       final parts = jwt.split('.');
@@ -49,6 +71,7 @@ class Session {
 
   static void signOut() {
     ApiService.unregisterPushToken();
+    SessionStore.clear();
     currentStay = null;
     token = null;
     propertyId = null;
@@ -609,6 +632,11 @@ class ApiService {
         checkout: DateTime.parse(data['checkoutDate'] as String),
       );
       Session.currentStay = stay;
+      unawaited(SessionStore.save(
+        token: Session.token!,
+        stay: stay,
+        propertyName: Session.propertyName,
+      ));
       unawaited(prefetch());
       return stay;
     } on UnauthorizedException {

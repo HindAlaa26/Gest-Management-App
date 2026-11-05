@@ -6,6 +6,8 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:gest_managment_app/core/theme/theme.dart';
 import 'package:gest_managment_app/core/widgets/app_logo_icon.dart';
 import 'package:gest_managment_app/features/auth/sign_in_screen.dart';
+import 'package:gest_managment_app/core/network/api_service.dart';
+import 'package:gest_managment_app/features/shell/main_shell.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -26,7 +28,10 @@ class _SplashScreenState extends State<SplashScreen>
       duration: const Duration(milliseconds: 3000),
     );
 
-    _controller.forward().then((_) {
+    final restored = Session.restore().catchError((_) => false);
+
+    _controller.forward().then((_) async {
+      final signedIn = await restored;
       if (!mounted) return;
       Future<void>.delayed(const Duration(milliseconds: 450), () {
         if (!mounted) return;
@@ -35,7 +40,7 @@ class _SplashScreenState extends State<SplashScreen>
           PageRouteBuilder<void>(
             pageBuilder: (_, animation, _) => FadeTransition(
               opacity: animation,
-              child: const SignInScreen(),
+              child: signedIn ? const MainShell() : const SignInScreen(),
             ),
             transitionDuration: const Duration(milliseconds: 500),
           ),
