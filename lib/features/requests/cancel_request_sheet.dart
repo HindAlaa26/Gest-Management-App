@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'package:gest_managment_app/core/models/guest_request.dart';
+import 'package:gest_managment_app/core/network/api_client.dart';
 import 'package:gest_managment_app/core/network/api_service.dart';
 import 'package:gest_managment_app/core/theme/theme.dart';
 
@@ -51,16 +52,16 @@ class _CancelRequestSheetState extends State<_CancelRequestSheet> {
 
     try {
       await ApiService().cancelRequest(
-        reference: widget.request.reference,
+        request: widget.request,
         reason: reason,
       );
       if (!mounted) return;
       Navigator.of(context).pop(true);
-    } catch (_) {
+    } catch (e) {
       if (!mounted) return;
       setState(() {
         loading = false;
-        error = 'Could not cancel. Please try again.';
+        error = requestErrorMessage(e, 'Could not cancel. Please try again.');
       });
     }
   }
@@ -184,4 +185,14 @@ class _ReasonTile extends StatelessWidget {
       ),
     );
   }
+}
+
+String requestErrorMessage(Object error, String fallback) {
+  if (error is ApiException && error.statusCode == 409) {
+    return 'This request was just updated. Please go back and try again.';
+  }
+  if (error is ApiException && error.statusCode == 400 && error.message.isNotEmpty) {
+    return error.message;
+  }
+  return fallback;
 }

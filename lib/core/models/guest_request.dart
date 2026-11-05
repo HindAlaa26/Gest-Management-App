@@ -44,6 +44,9 @@ class GuestRequest {
     this.history = const [],
     this.cancelReason,
     this.rating,
+    this.version,
+    this.allowChange = false,
+    this.allowCancel = false,
   });
 
   final String reference;
@@ -58,15 +61,19 @@ class GuestRequest {
   final String? cancelReason;
   final RequestRating? rating;
 
+  final String? version;
+  final bool allowChange;
+  final bool allowCancel;
+
 
   String get shortReference => reference.length >= 32
       ? 'REQ-${reference.substring(0, 8).toUpperCase()}'
       : reference;
 
 
-  bool get canChange => false;
+  bool get canChange => allowChange && version != null;
 
-  bool get canCancel => false;
+  bool get canCancel => allowCancel && version != null;
 
   bool get canRate {
     if (status != RequestStatus.done || rating != null) return false;
@@ -101,6 +108,9 @@ class GuestRequest {
       history: history ?? this.history,
       cancelReason: cancelReason ?? this.cancelReason,
       rating: rating ?? this.rating,
+      version: version,
+      allowChange: allowChange,
+      allowCancel: allowCancel,
     );
   }
 }

@@ -44,6 +44,14 @@ class ApiClient {
     return _send('POST', path, body: body, auth: auth);
   }
 
+  static Future<Map<String, dynamic>> put(
+    String path,
+    Object? body, {
+    bool auth = true,
+  }) {
+    return _send('PUT', path, body: body, auth: auth);
+  }
+
   static Future<Map<String, dynamic>> delete(
     String path,
     Object? body, {

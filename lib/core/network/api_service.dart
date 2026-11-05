@@ -4,7 +4,6 @@ import 'dart:convert';
 import 'package:flutter/foundation.dart'
     show TargetPlatform, defaultTargetPlatform, kIsWeb;
 
-import 'package:gest_managment_app/core/data/demo_data.dart';
 import 'package:gest_managment_app/core/network/api_client.dart';
 import 'package:gest_managment_app/core/network/api_config.dart';
 import 'package:gest_managment_app/core/models/app_notification.dart';
@@ -833,11 +832,6 @@ class ApiService {
     return category.name;
   }
 
-  static final Map<String, List<GuestRequest>> myRequestsByRoom = {
-    for (final entry in demoRequestsByRoom.entries)
-      entry.key: List<GuestRequest>.from(entry.value),
-  };
-
 
   static final Map<String, CatalogueItem> _catalogueCache = {};
 
@@ -981,6 +975,8 @@ class ApiService {
       );
     }
 
+    final allowed = j['allowedActions'];
+
     return GuestRequest(
       reference: j['id'] as String,
       vendorType:
@@ -992,6 +988,9 @@ class ApiService {
       status: _requestStatusFrom(j['status']),
       history: history,
       rating: rating,
+      version: j['version'] as String?,
+      allowChange: allowed is Map && allowed['canChange'] == true,
+      allowCancel: allowed is Map && allowed['canCancel'] == true,
     );
   }
 
@@ -1034,35 +1033,35 @@ class ApiService {
   }
 
   Future<GuestRequest> changeRequest({
-    required String reference,
+    required GuestRequest request,
     required List<RequestLine> lines,
     required RequestUrgency urgency,
   }) async {
-    await Future.delayed(const Duration(milliseconds: 500));
-
-    return _updateRequest(reference, (current) {
-      if (!current.canChange) throw RequestNotAllowedException();
-      return current.copyWith(lines: lines, urgency: urgency);
-    });
+    await _ensureCatalogue();
+    final json = await ApiClient.put(
+      '/api/guest-app/requests/${request.reference}',
+      {
+        'expectedVersion': request.version,
+        'items': [
+          for (final line in lines)
+            {'catalogueItemId': line.item.id, 'quantity': line.qty},
+        ],
+        'urgency': _urgencyName(urgency),
+      },
+    );
+    return _requestFromJson(json['data'] as Map<String, dynamic>);
   }
 
   Future<GuestRequest> cancelRequest({
-    required String reference,
+    required GuestRequest request,
     required String reason,
   }) async {
-    await Future.delayed(const Duration(milliseconds: 500));
-
-    return _updateRequest(reference, (current) {
-      if (!current.canCancel) throw RequestNotAllowedException();
-      return current.copyWith(
-        status: RequestStatus.cancelled,
-        cancelReason: reason,
-        history: [
-          ...current.history,
-          RequestStatusEntry(status: RequestStatus.cancelled, at: DateTime.now()),
-        ],
-      );
-    });
+    await _ensureCatalogue();
+    final json = await ApiClient.post(
+      '/api/guest-app/requests/${request.reference}/cancel',
+      {'expectedVersion': request.version, 'reason': reason},
+    );
+    return _requestFromJson(json['data'] as Map<String, dynamic>);
   }
 
   Future<GuestRequest> rateRequest({
@@ -1076,24 +1075,8 @@ class ApiService {
     await ApiClient.post('/api/guest-app/requests/$reference/rating', body);
     return getRequest(reference);
   }
-
-  GuestRequest _updateRequest(
-    String reference,
-    GuestRequest Function(GuestRequest current) update,
-  ) {
-    final room = Session.currentStay?.roomNumber ?? 'unknown';
-    final list = myRequestsByRoom[room] ?? <GuestRequest>[];
-    final index = list.indexWhere((request) => request.reference == reference);
-    if (index == -1) throw RequestNotFoundException();
-
-    final updated = update(list[index]);
-    list[index] = updated;
-    return updated;
-  }
 }
 
 class InvalidCredentialsException implements Exception {}
 
-class RequestNotFoundException implements Exception {}
 
-class RequestNotAllowedException implements Exception {}

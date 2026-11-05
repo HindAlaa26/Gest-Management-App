@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:gest_managment_app/core/models/guest_request.dart';
 import 'package:gest_managment_app/core/network/api_service.dart';
 import 'package:gest_managment_app/core/theme/theme.dart';
+import 'package:gest_managment_app/features/requests/cancel_request_sheet.dart';
 import 'package:gest_managment_app/core/utils/request_labels.dart';
 import 'package:gest_managment_app/core/widgets/catalogue_item_card.dart';
 import 'package:gest_managment_app/core/widgets/loading_button.dart';
@@ -55,17 +56,17 @@ class _ChangeRequestScreenState extends State<ChangeRequestScreen> {
 
     try {
       await ApiService().changeRequest(
-        reference: widget.request.reference,
+        request: widget.request,
         lines: lines,
         urgency: urgency,
       );
       if (!mounted) return;
       Navigator.of(context).pop(true);
-    } catch (_) {
+    } catch (e) {
       if (!mounted) return;
       setState(() {
         loading = false;
-        error = 'Could not save changes. Please try again.';
+        error = requestErrorMessage(e, 'Could not save changes. Please try again.');
       });
     }
   }
