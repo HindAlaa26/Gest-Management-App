@@ -9,6 +9,7 @@ class Offer {
     required this.type,
     required this.validUntil,
     required this.code,
+    this.description = '',
     this.opened = false,
     this.redeemedAt,
     this.expiredByServer = false,
@@ -20,6 +21,8 @@ class Offer {
   final DateTime validUntil;
 
   final String code;
+
+  final String description;
 
   final bool opened;
 

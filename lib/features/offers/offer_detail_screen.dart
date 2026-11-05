@@ -95,6 +95,15 @@ class _OfferDetailScreenState extends State<OfferDetailScreen> {
                       color: AppColors.navy,
                     ),
                   ),
+                  if (offer.description.isNotEmpty) ...[
+                    const SizedBox(height: 10),
+                    Text(
+                      offer.description,
+                      style: textTheme.bodyLarge?.copyWith(
+                        color: AppColors.navy,
+                      ),
+                    ),
+                  ],
                   const SizedBox(height: 8),
                   Row(
                     children: [

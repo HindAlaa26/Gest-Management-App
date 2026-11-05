@@ -253,6 +253,8 @@ class ApiService {
   static Offer offerFromJson(Map<String, dynamic> j) {
     final titleEn = '${j['offerTitleEn'] ?? ''}'.trim();
     final titleAr = '${j['offerTitleAr'] ?? ''}'.trim();
+    final descEn = '${j['descriptionEn'] ?? ''}'.trim();
+    final descAr = '${j['descriptionAr'] ?? ''}'.trim();
     final status = _offerStatusName(j['status']);
     final openedAt = j['openedAtUtc'] as String?;
     final redeemedAt = j['redeemedAtUtc'] as String?;
@@ -263,6 +265,7 @@ class ApiService {
       type: _offerTypeFrom(j['offerType']),
       validUntil: _parseUtc(j['expiredAtUtc'] as String),
       code: '${j['redemptionCode'] ?? ''}',
+      description: descEn.isNotEmpty ? descEn : descAr,
       opened: status == 'opened' || openedAt != null,
       redeemedAt: redeemedAt != null
           ? _parseUtc(redeemedAt)
