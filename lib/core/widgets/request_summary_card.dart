@@ -46,6 +46,7 @@ class RequestSummaryCard extends StatelessWidget {
               if (request.urgency != RequestUrgency.normal) ...[
                 UrgentTag(
                   emergency: request.urgency == RequestUrgency.emergency,
+                  label: request.urgency.label,
                 ),
                 const SizedBox(width: 8),
               ],

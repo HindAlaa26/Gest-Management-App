@@ -16,6 +16,7 @@ import 'package:gest_managment_app/core/models/feedback_item.dart';
 import 'package:gest_managment_app/core/models/feedback_record.dart';
 import 'package:gest_managment_app/core/models/guest_request.dart';
 import 'package:gest_managment_app/core/network/session_store.dart';
+import 'package:gest_managment_app/core/utils/request_lookups.dart';
 import 'package:gest_managment_app/core/models/guest_stay.dart';
 import 'package:gest_managment_app/core/models/loyalty.dart';
 import 'package:gest_managment_app/core/models/offer.dart';
@@ -839,6 +840,7 @@ class ApiService {
   static final Map<String, CatalogueItem> _catalogueCache = {};
 
   Future<List<CatalogueItem>> _loadCatalogue() async {
+    await RequestLookups.ensureLoaded();
     final json = await ApiClient.get('/api/guest-app/catalogue');
     final list = (json['data'] as List?) ?? const [];
     final items = list
@@ -886,26 +888,11 @@ class ApiService {
   }
 
   static RequestUrgency _urgencyFrom(Object? value) {
-    switch ('$value'.toLowerCase()) {
-      case 'normal':
-        return RequestUrgency.normal;
-      case 'emergency':
-        return RequestUrgency.emergency;
-      default:
-        return RequestUrgency.urgent;
-    }
+    final text = value is String ? value.trim() : '';
+    return text.isEmpty ? RequestUrgency.normal : RequestUrgency(text);
   }
 
-  static String _urgencyName(RequestUrgency urgency) {
-    switch (urgency) {
-      case RequestUrgency.normal:
-        return 'Normal';
-      case RequestUrgency.urgent:
-        return 'Urgent';
-      case RequestUrgency.emergency:
-        return 'Emergency';
-    }
-  }
+  static String _urgencyName(RequestUrgency urgency) => urgency.name;
 
   static RequestStatus _requestStatusFrom(Object? value) {
     switch ('$value'.toLowerCase()) {
@@ -1018,6 +1005,7 @@ class ApiService {
   }
 
   Future<List<GuestRequest>> getMyRequests() async {
+    await RequestLookups.ensureLoaded();
     await _ensureCatalogue();
     final json = await ApiClient.get(
       '/api/guest-app/requests',

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import 'package:gest_managment_app/core/models/guest_request.dart';
 import 'package:gest_managment_app/core/utils/chat_time.dart';
+import 'package:gest_managment_app/core/utils/request_lookups.dart';
 
 extension VendorTypeLabels on VendorType {
   String get label {
@@ -51,7 +52,27 @@ extension VendorTypeLabels on VendorType {
 }
 
 extension RequestStatusLabels on RequestStatus {
-  String get label {
+  /// Name from GET /api/lookups/request-statuses, or the built-in text.
+  String get label => RequestLookups.status(lookupKey) ?? fallbackLabel;
+
+  String get lookupKey {
+    switch (this) {
+      case RequestStatus.newRequest:
+        return 'new';
+      case RequestStatus.assigned:
+        return 'assigned';
+      case RequestStatus.inProgress:
+        return 'inprogress';
+      case RequestStatus.done:
+        return 'done';
+      case RequestStatus.cancelled:
+        return 'cancelled';
+      case RequestStatus.failed:
+        return 'failed';
+    }
+  }
+
+  String get fallbackLabel {
     switch (this) {
       case RequestStatus.newRequest:
         return 'New';
@@ -70,16 +91,8 @@ extension RequestStatusLabels on RequestStatus {
 }
 
 extension RequestUrgencyLabels on RequestUrgency {
-  String get label {
-    switch (this) {
-      case RequestUrgency.normal:
-        return 'Normal';
-      case RequestUrgency.urgent:
-        return 'Urgent';
-      case RequestUrgency.emergency:
-        return 'Emergency';
-    }
-  }
+  /// Name from GET /api/lookups/request-urgencies, readable ("In progress" style).
+  String get label => RequestLookups.urgencyLabel(this);
 }
 
 extension RequestStatusGroups on RequestStatus {

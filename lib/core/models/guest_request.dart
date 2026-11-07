@@ -1,6 +1,25 @@
 enum VendorType { water, drinks, cleaning, maintenance, other }
 
-enum RequestUrgency { normal, urgent, emergency }
+class RequestUrgency {
+  const RequestUrgency(this.name);
+
+  final String name;
+
+  static const normal = RequestUrgency('Normal');
+  static const urgent = RequestUrgency('Urgent');
+  static const emergency = RequestUrgency('Emergency');
+
+  static const List<RequestUrgency> defaults = [normal, urgent, emergency];
+
+  String get key => name.toLowerCase();
+
+  @override
+  bool operator ==(Object other) =>
+      other is RequestUrgency && other.key == key;
+
+  @override
+  int get hashCode => key.hashCode;
+}
 
 enum RequestStatus { newRequest, assigned, inProgress, done, cancelled, failed }
 

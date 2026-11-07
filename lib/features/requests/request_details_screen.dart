@@ -402,7 +402,10 @@ class _RequestDetailsScreenState extends State<RequestDetailsScreen> {
           children: [
             RequestStatusBadge(status: r.status),
             if (r.urgency != RequestUrgency.normal)
-              UrgentTag(emergency: r.urgency == RequestUrgency.emergency),
+              UrgentTag(
+                emergency: r.urgency == RequestUrgency.emergency,
+                label: r.urgency.label,
+              ),
           ],
         ),
         const SizedBox(height: 8),

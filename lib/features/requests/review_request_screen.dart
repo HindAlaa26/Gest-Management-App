@@ -4,6 +4,7 @@ import 'package:gest_managment_app/core/models/guest_request.dart';
 import 'package:gest_managment_app/core/network/api_service.dart';
 import 'package:gest_managment_app/core/theme/theme.dart';
 import 'package:gest_managment_app/core/utils/request_labels.dart';
+import 'package:gest_managment_app/core/utils/request_lookups.dart';
 import 'package:gest_managment_app/core/widgets/delivery_room_card.dart';
 import 'package:gest_managment_app/core/widgets/loading_button.dart';
 import 'package:gest_managment_app/core/widgets/request_line_row.dart';
@@ -31,6 +32,7 @@ class _ReviewRequestScreenState extends State<ReviewRequestScreen> {
 
   final TextEditingController noteController = TextEditingController();
 
+  final List<RequestUrgency> urgencies = RequestLookups.urgencies;
   int urgencyIndex = 0;
   bool loading = false;
   String? error;
@@ -52,7 +54,7 @@ class _ReviewRequestScreenState extends State<ReviewRequestScreen> {
     try {
       final request = await ApiService().sendRequest(
         vendorType: widget.vendorType,
-        urgency: RequestUrgency.values[urgencyIndex],
+        urgency: urgencies[urgencyIndex],
         lines: widget.lines,
         note: noteController.text.trim(),
       );
@@ -133,11 +135,7 @@ class _ReviewRequestScreenState extends State<ReviewRequestScreen> {
               const SectionLabel('Urgency'),
               const SizedBox(height: 12),
               SegmentedToggle(
-                labels: [
-                  RequestUrgency.normal.label,
-                  RequestUrgency.urgent.label,
-                  RequestUrgency.emergency.label,
-                ],
+                labels: [for (final urgency in urgencies) urgency.label],
                 selectedIndex: urgencyIndex,
                 onChanged: (index) => setState(() => urgencyIndex = index),
               ),

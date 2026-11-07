@@ -5,6 +5,7 @@ import 'package:gest_managment_app/core/network/api_service.dart';
 import 'package:gest_managment_app/core/theme/theme.dart';
 import 'package:gest_managment_app/features/requests/cancel_request_sheet.dart';
 import 'package:gest_managment_app/core/utils/request_labels.dart';
+import 'package:gest_managment_app/core/utils/request_lookups.dart';
 import 'package:gest_managment_app/core/widgets/catalogue_item_card.dart';
 import 'package:gest_managment_app/core/widgets/loading_button.dart';
 import 'package:gest_managment_app/core/widgets/section_label.dart';
@@ -23,8 +24,14 @@ class _ChangeRequestScreenState extends State<ChangeRequestScreen> {
   late final Map<String, int> quantities = {
     for (final line in widget.request.lines) line.item.id: line.qty,
   };
-  late int urgencyIndex =
-      widget.request.urgency == RequestUrgency.normal ? 0 : 1;
+
+  /// Every urgency from the backend, plus the request's own one if it is missing.
+  late final List<RequestUrgency> urgencies = [
+    ...RequestLookups.urgencies,
+    if (!RequestLookups.urgencies.contains(widget.request.urgency))
+      widget.request.urgency,
+  ];
+  late int urgencyIndex = urgencies.indexOf(widget.request.urgency);
 
   bool loading = false;
   String? error;
@@ -35,8 +42,7 @@ class _ChangeRequestScreenState extends State<ChangeRequestScreen> {
             RequestLine(item: line.item, qty: quantities[line.item.id]!),
       ];
 
-  RequestUrgency get urgency =>
-      urgencyIndex == 1 ? RequestUrgency.urgent : RequestUrgency.normal;
+  RequestUrgency get urgency => urgencies[urgencyIndex];
 
   bool get hasChanges {
     if (urgency != widget.request.urgency) return true;
@@ -128,10 +134,7 @@ class _ChangeRequestScreenState extends State<ChangeRequestScreen> {
               const SectionLabel('Urgency'),
               const SizedBox(height: 12),
               SegmentedToggle(
-                labels: [
-                  RequestUrgency.normal.label,
-                  RequestUrgency.urgent.label,
-                ],
+                labels: [for (final urgency in urgencies) urgency.label],
                 selectedIndex: urgencyIndex,
                 onChanged: (index) => setState(() => urgencyIndex = index),
               ),
