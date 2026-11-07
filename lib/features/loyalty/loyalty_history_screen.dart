@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import 'package:gest_managment_app/core/models/loyalty.dart';
+import 'package:gest_managment_app/core/network/api_service.dart';
 import 'package:gest_managment_app/core/theme/theme.dart';
 import 'package:gest_managment_app/core/utils/helpers.dart';
 import 'package:gest_managment_app/core/utils/loyalty_labels.dart';
@@ -13,10 +14,59 @@ import 'package:gest_managment_app/core/widgets/loyalty_tier_chip.dart';
 import 'package:gest_managment_app/core/widgets/royal_card.dart';
 import 'package:gest_managment_app/core/widgets/section_label.dart';
 
-class LoyaltyHistoryScreen extends StatelessWidget {
+class LoyaltyHistoryScreen extends StatefulWidget {
   const LoyaltyHistoryScreen({super.key, required this.account});
 
   final LoyaltyAccount account;
+
+  @override
+  State<LoyaltyHistoryScreen> createState() => _LoyaltyHistoryScreenState();
+}
+
+class _LoyaltyHistoryScreenState extends State<LoyaltyHistoryScreen> {
+  static const int pageSize = 20;
+
+  late final List<LoyaltyEntry> entries = List<LoyaltyEntry>.of(
+    widget.account.entries,
+  );
+  bool loadingMore = false;
+  bool allLoaded = false;
+  String? moreError;
+
+  LoyaltyAccount get account => widget.account;
+
+   bool get canLoadMore =>
+      !allLoaded && entries.isNotEmpty && entries.length % pageSize == 0;
+
+  Future<void> loadMore() async {
+    if (loadingMore) return;
+
+    setState(() {
+      loadingMore = true;
+      moreError = null;
+    });
+
+    try {
+      final page = entries.length ~/ pageSize + 1;
+      final result = await ApiService().getLoyaltyLedgerPage(
+        page: page,
+        pageSize: pageSize,
+      );
+      if (!mounted) return;
+      setState(() {
+        entries.addAll(result.entries);
+        allLoaded =
+            result.entries.length < pageSize || entries.length >= result.total;
+        loadingMore = false;
+      });
+    } catch (_) {
+      if (!mounted) return;
+      setState(() {
+        moreError = 'Could not load more activity. Please try again.';
+        loadingMore = false;
+      });
+    }
+  }
 
   Widget noteRow(
     BuildContext context,
@@ -46,10 +96,10 @@ class LoyaltyHistoryScreen extends StatelessWidget {
   Widget buildSummary(BuildContext context) {
     final textTheme = Theme.of(context).textTheme;
     final palette = account.tier.palette;
-    final next = account.nextTier;
-    final caption = next == null
+    final caption = !account.hasNextTier
         ? "You've reached our top tier"
-        : '${formatPoints(account.pointsToNext)} points to ${next.label}';
+        : '${formatPoints(account.pointsToNext)} points to ${account.nextTierLabel}';
+    final months = account.expiryMonths;
 
     return LoyaltyCardSurface(
       tier: account.tier,
@@ -93,7 +143,7 @@ class LoyaltyHistoryScreen extends StatelessWidget {
               ),
             ],
           ),
-          if (next != null) ...[
+          if (account.hasNextTier) ...[
             const SizedBox(height: 14),
             LoyaltyProgressBar(
               progress: account.progress,
@@ -108,17 +158,18 @@ class LoyaltyHistoryScreen extends StatelessWidget {
           ),
           const SizedBox(height: 12),
           Divider(color: palette.divider),
-          noteRow(
-            context,
-            palette,
-            Icons.schedule,
-            'Points expire 24 months after they are earned',
-          ),
+          if (months != null)
+            noteRow(
+              context,
+              palette,
+              Icons.schedule,
+              'Points expire $months months after they are earned',
+            ),
           noteRow(
             context,
             palette,
             Icons.workspace_premium_outlined,
-            'Your tier is based on points earned in the last 12 months',
+            'Your tier is based on your recent points',
           ),
         ],
       ),
@@ -182,6 +233,59 @@ class LoyaltyHistoryScreen extends StatelessWidget {
     );
   }
 
+  Widget buildShowMore(BuildContext context) {
+    final textTheme = Theme.of(context).textTheme;
+
+    return Column(
+      children: [
+        if (moreError != null)
+          Padding(
+            padding: const EdgeInsets.only(bottom: 6),
+            child: Text(
+              moreError!,
+              textAlign: TextAlign.center,
+              style: textTheme.bodyMedium?.copyWith(color: AppColors.error),
+            ),
+          ),
+        Center(
+          child: loadingMore
+              ? const Padding(
+                  padding: EdgeInsets.all(12),
+                  child: SizedBox(
+                    width: 22,
+                    height: 22,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2.5,
+                      color: AppColors.teal,
+                    ),
+                  ),
+                )
+              : TextButton(
+                  onPressed: loadMore,
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        'Show more',
+                        style: textTheme.bodyMedium?.copyWith(
+                          color: AppColors.teal,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      const SizedBox(width: 4),
+                      const Icon(
+                        Icons.expand_more,
+                        size: 18,
+                        color: AppColors.teal,
+                      ),
+                    ],
+                  ),
+                ),
+        ),
+      ],
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -195,12 +299,14 @@ class LoyaltyHistoryScreen extends StatelessWidget {
             const SizedBox(height: 24),
             const SectionLabel('Activity history'),
             const SizedBox(height: 12),
-            if (account.entries.isEmpty)
+            if (entries.isEmpty)
               const EmptyStateCard(
                 'No points yet. You earn points from your stays and chargeable requests.',
               )
-            else
-              for (final entry in account.entries) buildEntry(context, entry),
+            else ...[
+              for (final entry in entries) buildEntry(context, entry),
+              if (canLoadMore) buildShowMore(context),
+            ],
           ],
         ),
       ),

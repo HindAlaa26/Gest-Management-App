@@ -115,6 +115,8 @@ extension LoyaltyEntryTypeStyle on LoyaltyEntryType {
         return Icons.hourglass_bottom_outlined;
       case LoyaltyEntryType.adjust:
         return Icons.edit_outlined;
+      case LoyaltyEntryType.other:
+        return Icons.more_horiz;
     }
   }
 
@@ -126,6 +128,7 @@ extension LoyaltyEntryTypeStyle on LoyaltyEntryType {
       case LoyaltyEntryType.adjust:
         return AppColors.goldLight;
       case LoyaltyEntryType.expire:
+      case LoyaltyEntryType.other:
         return AppColors.softGrey;
     }
   }
@@ -138,6 +141,7 @@ extension LoyaltyEntryTypeStyle on LoyaltyEntryType {
       case LoyaltyEntryType.adjust:
         return AppColors.goldDeep;
       case LoyaltyEntryType.expire:
+      case LoyaltyEntryType.other:
         return AppColors.muted;
     }
   }

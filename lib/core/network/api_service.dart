@@ -454,14 +454,42 @@ class ApiService {
       balance: (data['availablePoints'] as num?)?.toInt() ?? 0,
       tierPoints: (data['rollingEarnedPoints'] as num?)?.toInt() ?? 0,
       serverTierName: data['tier'] as String?,
+      nextTierName: data['nextTierName'] as String?,
+      nextTierThreshold: (data['nextTierThreshold'] as num?)?.toInt(),
+      expiryMonths: (data['expiryMonths'] as num?)?.toInt(),
+      fromServer: true,
     );
+  }
+
+   Future<({List<LoyaltyEntry> entries, int total})> getLoyaltyLedgerPage({
+    required int page,
+    required int pageSize,
+  }) async {
+    final json = await ApiClient.get(
+      '/api/guest-app/loyalty/ledger',
+      query: {'page': '$page', 'pageSize': '$pageSize'},
+    );
+    final list = (json['data'] as List?) ?? const [];
+    final offset = (page - 1) * pageSize;
+    final entries = <LoyaltyEntry>[
+      for (var i = 0; i < list.length; i++)
+        _loyaltyEntryFromJson(list[i] as Map<String, dynamic>, offset + i),
+    ];
+    final total =
+        ((json['pagenation'] as Map?)?['total'] as num?)?.toInt() ??
+        offset + entries.length;
+    return (entries: entries, total: total);
   }
 
   static LoyaltyEntry _loyaltyEntryFromJson(Map<String, dynamic> j, int index) {
     final kind = '${j['type']}'.toLowerCase();
-    LoyaltyEntryType type = LoyaltyEntryType.earn;
-    String label = 'Earned';
-    if (kind == 'redeem') {
+    // An unknown type from the backend gets a neutral icon and label.
+    LoyaltyEntryType type = LoyaltyEntryType.other;
+    String label = 'Activity';
+    if (kind == 'earn') {
+      type = LoyaltyEntryType.earn;
+      label = 'Earned';
+    } else if (kind == 'redeem') {
       type = LoyaltyEntryType.redeem;
       label = 'Redeemed';
     } else if (kind == 'expire') {
