@@ -70,7 +70,7 @@ class _RequestsScreenState extends State<RequestsScreen> {
               physics: const NeverScrollableScrollPhysics(),
               mainAxisSpacing: 12,
               crossAxisSpacing: 12,
-              childAspectRatio: 1.1,
+              childAspectRatio: 1.5,
               children: [
                 for (final type in gridTypes)
                   _ServiceTile(
