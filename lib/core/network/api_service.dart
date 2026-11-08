@@ -314,6 +314,18 @@ class ApiService {
   }
 
   Future<List<DataRequest>> _loadExports() async {
+    try {
+      final json = await ApiClient.get('/api/guest-app/exports');
+      final rows = (json['data'] as List?) ?? const [];
+      return [
+        for (final row in rows)
+          dataRequestFromExportJson(row as Map<String, dynamic>),
+      ];
+    } on ApiException catch (error) {
+      // Server without the list endpoint: use the exports made in this session.
+      if (error.statusCode != 404 && error.statusCode != 405) rethrow;
+    }
+
     final loaded = <DataRequest>[];
     for (final id in List<String>.from(_exportIds)) {
       try {
@@ -1089,5 +1101,4 @@ class ApiService {
 }
 
 class InvalidCredentialsException implements Exception {}
-
 

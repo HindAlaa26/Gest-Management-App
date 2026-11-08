@@ -52,7 +52,8 @@ class FeedbackSummaryStrip extends StatelessWidget {
                 children: [
                   Text(
                     item.value,
-                    style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                    style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                      fontSize: 26,
                       color: AppColors.navy,
                       fontWeight: FontWeight.w700,
                     ),

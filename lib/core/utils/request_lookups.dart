@@ -100,13 +100,14 @@ class RequestLookups {
     try {
       final json = await ApiClient.get(path);
       final list = (json['data'] as List?) ?? const [];
-      return [
-        for (final item in list)
-          if (item is Map<String, dynamic> &&
-              item['name'] is String &&
-              (item['name'] as String).isNotEmpty)
-            item['name'] as String,
-      ];
+      // New shape: { code, nameAr, nameEn }. Old shape: { value, name }.
+      final names = <String>[];
+      for (final item in list) {
+        if (item is! Map<String, dynamic>) continue;
+        final code = item['code'] ?? item['name'];
+        if (code is String && code.isNotEmpty) names.add(code);
+      }
+      return names;
     } catch (error) {
       debugPrint('Could not load $path: $error');
       return const [];
