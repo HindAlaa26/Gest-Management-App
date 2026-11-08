@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 
 import 'package:gest_managment_app/core/models/guest_request.dart';
+import 'package:gest_managment_app/core/network/api_client.dart';
 import 'package:gest_managment_app/core/network/api_service.dart';
 import 'package:gest_managment_app/core/theme/theme.dart';
 import 'package:gest_managment_app/core/utils/request_labels.dart';
@@ -159,11 +160,13 @@ class _RequestDetailsScreenState extends State<RequestDetailsScreen> {
         request = updated;
         submitting = false;
       });
-    } catch (_) {
+    } catch (error) {
       if (!mounted) return;
       setState(() {
         submitting = false;
-        ratingError = 'Could not send your rating. Please try again.';
+        ratingError = error is ApiException && error.statusCode == 409
+            ? 'Rating is no longer available for this request.'
+            : 'Could not send your rating. Please try again.';
       });
     }
   }
@@ -283,12 +286,6 @@ class _RequestDetailsScreenState extends State<RequestDetailsScreen> {
                   value: stars,
                   onChanged: (value) => setState(() => stars = value),
                 ),
-              ),
-              const SizedBox(height: 4),
-              Text(
-                'You can rate within 24 hours of completion.',
-                textAlign: TextAlign.center,
-                style: textTheme.bodySmall?.copyWith(color: AppColors.muted),
               ),
               const SizedBox(height: 12),
               TextField(

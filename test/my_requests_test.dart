@@ -30,7 +30,7 @@ List<RequestStatusEntry> _doneAgo(Duration age) {
 
 void main() {
   group('my requests', () {
-    test('a Done request can be rated within 24 hours', () {
+    test('a Done request can be rated', () {
       final request = _request(
         RequestStatus.done,
         history: _doneAgo(const Duration(hours: 2)),
@@ -39,13 +39,13 @@ void main() {
       expect(request.canRate, isTrue);
     });
 
-    test('rating closes after 24 hours', () {
+    test('an older Done request still offers rating (the backend decides)', () {
       final request = _request(
         RequestStatus.done,
         history: _doneAgo(const Duration(hours: 25)),
       );
 
-      expect(request.canRate, isFalse);
+      expect(request.canRate, isTrue);
     });
 
     test('a request can be rated only once', () {

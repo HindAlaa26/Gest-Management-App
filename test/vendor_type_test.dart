@@ -18,11 +18,6 @@ void main() {
       const spa = VendorType('Spa');
 
       expect(spa.label, 'Spa');
-      expect(spa.subtitle, 'Browse items');
-    });
-
-    test('known types keep their subtitle', () {
-      expect(VendorType.water.subtitle, 'Bottled & sparkling');
     });
   });
 

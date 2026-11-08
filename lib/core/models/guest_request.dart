@@ -120,12 +120,7 @@ class GuestRequest {
 
   bool get canCancel => allowCancel && version != null;
 
-  bool get canRate {
-    if (status != RequestStatus.done || rating != null) return false;
-    final doneAt = reachedAt(RequestStatus.done);
-    if (doneAt == null) return false;
-    return DateTime.now().difference(doneAt) <= const Duration(hours: 24);
-  }
+   bool get canRate => status == RequestStatus.done && rating == null;
 
   DateTime? reachedAt(RequestStatus target) {
     for (final entry in history) {

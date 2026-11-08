@@ -8,15 +8,6 @@ extension VendorTypeLabels on VendorType {
   /// Name from GET /api/lookups/request-vendor-types.
   String get label => RequestLookups.vendorLabel(this);
 
-  String get subtitle {
-    if (this == VendorType.water) return 'Bottled & sparkling';
-    if (this == VendorType.drinks) return 'Tea, sodas & more';
-    if (this == VendorType.cleaning) return 'Towels & linens';
-    if (this == VendorType.maintenance) return 'Repairs & adjustments';
-    if (this == VendorType.other) return 'Anything else you need';
-    return 'Browse items';
-  }
-
   IconData get icon {
     if (this == VendorType.water) return Icons.water_drop_outlined;
     if (this == VendorType.drinks) return Icons.local_cafe_outlined;

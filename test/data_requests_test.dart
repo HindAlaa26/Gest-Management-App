@@ -88,17 +88,5 @@ void main() {
         );
       }
     });
-
-    test('the deletion deadline is 24 hours after the request', () {
-      final requestedAt = DateTime(2026, 10, 28, 9);
-      final request = DataRequest(
-        id: 'x',
-        type: DataRequestType.delete,
-        status: DataRequestStatus.pending,
-        requestedAt: requestedAt,
-      );
-
-      expect(request.deadline, DateTime(2026, 10, 29, 9));
-    });
   });
 }

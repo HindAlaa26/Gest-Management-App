@@ -24,8 +24,6 @@ class DataRequest {
       status == DataRequestStatus.pending ||
       status == DataRequestStatus.inProgress;
 
-  DateTime get deadline => requestedAt.add(const Duration(hours: 24));
-
   bool get linkExpired {
     final expires = downloadExpiresAt;
     return expires != null && DateTime.now().isAfter(expires);

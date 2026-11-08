@@ -140,7 +140,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     try {
       await ApiService().requestDataDeletion();
       if (!mounted) return;
-      showMessage("Request received. We'll delete your data within 24 hours.");
+      showMessage("Request received. We'll delete your data soon.");
       await load();
     } on DataRequestInProgressException {
       if (!mounted) return;

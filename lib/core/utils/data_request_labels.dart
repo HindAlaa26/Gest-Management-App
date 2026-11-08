@@ -59,7 +59,7 @@ String dataRequestNote(DataRequest request) {
   }
 
   if (request.isActive) {
-    return 'We will finish by ${formatDateTime(request.deadline)}.';
+    return 'We are removing your personal data. This page updates when it is done.';
   }
   final at = request.completedAt;
   return at == null

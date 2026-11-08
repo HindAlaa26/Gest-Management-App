@@ -151,11 +151,6 @@ class _ServiceTile extends StatelessWidget {
             fontWeight: FontWeight.w700,
           ),
         ),
-        const SizedBox(height: 2),
-        Text(
-          type.subtitle,
-          style: textTheme.bodySmall?.copyWith(color: AppColors.muted),
-        ),
       ],
     );
 

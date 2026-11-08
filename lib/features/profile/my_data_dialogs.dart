@@ -24,7 +24,7 @@ Future<bool> confirmDeleteMyData(BuildContext context) async {
             ),
             SizedBox(height: 12),
             Text(
-              'This cannot be undone. It is completed within 24 hours.',
+              'This cannot be undone.',
               style: TextStyle(fontWeight: FontWeight.w700),
             ),
           ],
