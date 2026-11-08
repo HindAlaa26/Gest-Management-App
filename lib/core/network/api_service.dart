@@ -301,8 +301,11 @@ class ApiService {
       case 'bonuspoints':
       case '3':
         return OfferType.bonusPoints;
-      default:
+      case 'freeitem':
+      case '4':
         return OfferType.freeItem;
+      default:
+        return OfferType.other;
     }
   }
 
@@ -936,9 +939,21 @@ class ApiService {
         return RequestStatus.cancelled;
       case 'failed':
         return RequestStatus.failed;
-
-      default:
+      case 'new':
+      case '1':
         return RequestStatus.newRequest;
+      case '2':
+        return RequestStatus.assigned;
+      case '3':
+        return RequestStatus.inProgress;
+      case '4':
+        return RequestStatus.done;
+      case '5':
+        return RequestStatus.cancelled;
+      case '6':
+        return RequestStatus.failed;
+      default:
+        return RequestStatus.other;
     }
   }
 
@@ -1006,6 +1021,7 @@ class ApiService {
       note: (j['note'] as String?) ?? '',
       createdAt: _parseUtc(j['createdAtUtc'] as String),
       status: _requestStatusFrom(j['status']),
+      statusName: '${j['status']}',
       history: history,
       rating: rating,
       version: j['version'] as String?,
@@ -1101,4 +1117,3 @@ class ApiService {
 }
 
 class InvalidCredentialsException implements Exception {}
-

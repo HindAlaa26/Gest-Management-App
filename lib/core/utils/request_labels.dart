@@ -36,6 +36,8 @@ extension RequestStatusLabels on RequestStatus {
         return 'cancelled';
       case RequestStatus.failed:
         return 'failed';
+      case RequestStatus.other:
+        return 'other';
     }
   }
 
@@ -53,6 +55,8 @@ extension RequestStatusLabels on RequestStatus {
         return 'Cancelled';
       case RequestStatus.failed:
         return 'Not completed';
+      case RequestStatus.other:
+        return 'Update';
     }
   }
 }
@@ -66,7 +70,20 @@ extension RequestStatusGroups on RequestStatus {
   bool get isActive =>
       this == RequestStatus.newRequest ||
       this == RequestStatus.assigned ||
-      this == RequestStatus.inProgress;
+      this == RequestStatus.inProgress ||
+      this == RequestStatus.other;
+}
+
+extension GuestRequestLabels on GuestRequest {
+  /// The status name shown to the guest. A status the app does not know uses
+  /// the name sent by the backend.
+  String get statusLabel {
+    if (status != RequestStatus.other || statusName.isEmpty) {
+      return status.label;
+    }
+    return RequestLookups.status(statusName.toLowerCase()) ??
+        RequestLookups.humanize(statusName);
+  }
 }
 
 String formatRequestTime(DateTime time) {

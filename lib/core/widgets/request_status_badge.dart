@@ -5,9 +5,12 @@ import 'package:gest_managment_app/core/theme/theme.dart';
 import 'package:gest_managment_app/core/utils/request_labels.dart';
 
 class RequestStatusBadge extends StatelessWidget {
-  const RequestStatusBadge({super.key, required this.status});
+  const RequestStatusBadge({super.key, required this.status, this.label});
 
   final RequestStatus status;
+
+  /// Text to show instead of the built-in one (for a status the app does not know).
+  final String? label;
 
   @override
   Widget build(BuildContext context) {
@@ -39,6 +42,10 @@ class RequestStatusBadge extends StatelessWidget {
         background = AppColors.error.withValues(alpha: 0.1);
         foreground = AppColors.error;
         break;
+      case RequestStatus.other:
+        background = const Color(0xFFF3F5F7);
+        foreground = AppColors.muted;
+        break;
     }
 
     return Container(
@@ -60,7 +67,7 @@ class RequestStatusBadge extends StatelessWidget {
           ),
           const SizedBox(width: 6),
           Text(
-            status.label,
+            label ?? status.label,
             style: Theme.of(context).textTheme.labelSmall
                 ?.copyWith(color: foreground, fontWeight: FontWeight.w700),
           ),

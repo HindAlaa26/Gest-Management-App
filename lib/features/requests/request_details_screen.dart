@@ -397,7 +397,7 @@ class _RequestDetailsScreenState extends State<RequestDetailsScreen> {
           runSpacing: 6,
           crossAxisAlignment: WrapCrossAlignment.center,
           children: [
-            RequestStatusBadge(status: r.status),
+            RequestStatusBadge(status: r.status, label: r.statusLabel),
             if (r.urgency != RequestUrgency.normal)
               UrgentTag(
                 emergency: r.urgency == RequestUrgency.emergency,

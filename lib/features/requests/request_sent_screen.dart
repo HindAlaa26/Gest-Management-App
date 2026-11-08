@@ -91,7 +91,12 @@ class _RequestSentScreenState extends State<RequestSentScreen> {
               const SizedBox(height: 20),
               Center(child: ReferenceBadge(reference: request.shortReference)),
               const SizedBox(height: 14),
-              Center(child: RequestStatusBadge(status: request.status)),
+              Center(
+                child: RequestStatusBadge(
+                  status: request.status,
+                  label: request.statusLabel,
+                ),
+              ),
               const SizedBox(height: 24),
               RoyalCard(
                 child: Column(

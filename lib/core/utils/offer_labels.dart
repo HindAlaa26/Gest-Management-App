@@ -14,6 +14,8 @@ extension OfferTypeLabels on OfferType {
         return 'Bonus points';
       case OfferType.freeItem:
         return 'Free item';
+      case OfferType.other:
+        return 'Offer';
     }
   }
 
@@ -27,6 +29,8 @@ extension OfferTypeLabels on OfferType {
         return Icons.workspace_premium_outlined;
       case OfferType.freeItem:
         return Icons.card_giftcard_outlined;
+      case OfferType.other:
+        return Icons.local_offer_outlined;
     }
   }
 }

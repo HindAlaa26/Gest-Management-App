@@ -1,4 +1,4 @@
-enum OfferType { discount, roomUpgrade, bonusPoints, freeItem }
+enum OfferType { discount, roomUpgrade, bonusPoints, freeItem, other }
 
 enum OfferStatus { available, used, expired }
 

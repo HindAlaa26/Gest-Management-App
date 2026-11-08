@@ -50,7 +50,10 @@ class RequestSummaryCard extends StatelessWidget {
                 ),
                 const SizedBox(width: 8),
               ],
-              RequestStatusBadge(status: request.status),
+              RequestStatusBadge(
+                status: request.status,
+                label: request.statusLabel,
+              ),
             ],
           ),
           const SizedBox(height: 10),

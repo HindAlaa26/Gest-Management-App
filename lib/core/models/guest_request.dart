@@ -47,7 +47,15 @@ class RequestUrgency {
   int get hashCode => key.hashCode;
 }
 
-enum RequestStatus { newRequest, assigned, inProgress, done, cancelled, failed }
+enum RequestStatus {
+  newRequest,
+  assigned,
+  inProgress,
+  done,
+  cancelled,
+  failed,
+  other,
+}
 
 class CatalogueItem {
   const CatalogueItem({
@@ -92,6 +100,7 @@ class GuestRequest {
     this.version,
     this.allowChange = false,
     this.allowCancel = false,
+    this.statusName = '',
   });
 
   final String reference;
@@ -101,6 +110,9 @@ class GuestRequest {
   final String note;
   final DateTime createdAt;
   final RequestStatus status;
+
+  /// Status name sent by the backend (shown when the status is not one the app knows).
+  final String statusName;
 
   final List<RequestStatusEntry> history;
   final String? cancelReason;
@@ -151,6 +163,7 @@ class GuestRequest {
       version: version,
       allowChange: allowChange,
       allowCancel: allowCancel,
+      statusName: statusName,
     );
   }
 }
