@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:gest_managment_app/core/models/guest_request.dart';
 import 'package:gest_managment_app/core/theme/theme.dart';
 import 'package:gest_managment_app/core/utils/request_labels.dart';
+import 'package:gest_managment_app/core/utils/request_lookups.dart';
 import 'package:gest_managment_app/core/widgets/delivery_room_card.dart';
 import 'package:gest_managment_app/core/widgets/gold_divider.dart';
 import 'package:gest_managment_app/core/widgets/royal_card.dart';
@@ -10,8 +11,21 @@ import 'package:gest_managment_app/core/widgets/section_label.dart';
 import 'package:gest_managment_app/features/requests/catalogue_screen.dart';
 import 'package:gest_managment_app/features/requests/my_requests_screen.dart';
 
-class RequestsScreen extends StatelessWidget {
+class RequestsScreen extends StatefulWidget {
   const RequestsScreen({super.key});
+
+  @override
+  State<RequestsScreen> createState() => _RequestsScreenState();
+}
+
+class _RequestsScreenState extends State<RequestsScreen> {
+  @override
+  void initState() {
+    super.initState();
+    RequestLookups.ensureLoaded().then((_) {
+      if (mounted) setState(() {});
+    });
+  }
 
   void openCatalogue(BuildContext context, VendorType type) {
     Navigator.push(
@@ -22,7 +36,7 @@ class RequestsScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final gridTypes = VendorType.values
+    final gridTypes = RequestLookups.vendorTypes
         .where((t) => t != VendorType.other)
         .toList();
 
@@ -65,12 +79,14 @@ class RequestsScreen extends StatelessWidget {
                   ),
               ],
             ),
-            const SizedBox(height: 12),
-            _ServiceTile(
-              type: VendorType.other,
-              wide: true,
-              onTap: () => openCatalogue(context, VendorType.other),
-            ),
+            if (RequestLookups.vendorTypes.contains(VendorType.other)) ...[
+              const SizedBox(height: 12),
+              _ServiceTile(
+                type: VendorType.other,
+                wide: true,
+                onTap: () => openCatalogue(context, VendorType.other),
+              ),
+            ],
             const SizedBox(height: 12),
             Center(
               child: TextButton(

@@ -5,49 +5,25 @@ import 'package:gest_managment_app/core/utils/chat_time.dart';
 import 'package:gest_managment_app/core/utils/request_lookups.dart';
 
 extension VendorTypeLabels on VendorType {
-  String get label {
-    switch (this) {
-      case VendorType.water:
-        return 'Water';
-      case VendorType.drinks:
-        return 'Drinks';
-      case VendorType.cleaning:
-        return 'Cleaning';
-      case VendorType.maintenance:
-        return 'Maintenance';
-      case VendorType.other:
-        return 'Other';
-    }
-  }
+  /// Name from GET /api/lookups/request-vendor-types.
+  String get label => RequestLookups.vendorLabel(this);
 
   String get subtitle {
-    switch (this) {
-      case VendorType.water:
-        return 'Bottled & sparkling';
-      case VendorType.drinks:
-        return 'Tea, sodas & more';
-      case VendorType.cleaning:
-        return 'Towels & linens';
-      case VendorType.maintenance:
-        return 'Repairs & adjustments';
-      case VendorType.other:
-        return 'Anything else you need';
-    }
+    if (this == VendorType.water) return 'Bottled & sparkling';
+    if (this == VendorType.drinks) return 'Tea, sodas & more';
+    if (this == VendorType.cleaning) return 'Towels & linens';
+    if (this == VendorType.maintenance) return 'Repairs & adjustments';
+    if (this == VendorType.other) return 'Anything else you need';
+    return 'Browse items';
   }
 
   IconData get icon {
-    switch (this) {
-      case VendorType.water:
-        return Icons.water_drop_outlined;
-      case VendorType.drinks:
-        return Icons.local_cafe_outlined;
-      case VendorType.cleaning:
-        return Icons.cleaning_services_outlined;
-      case VendorType.maintenance:
-        return Icons.build_outlined;
-      case VendorType.other:
-        return Icons.more_horiz;
-    }
+    if (this == VendorType.water) return Icons.water_drop_outlined;
+    if (this == VendorType.drinks) return Icons.local_cafe_outlined;
+    if (this == VendorType.cleaning) return Icons.cleaning_services_outlined;
+    if (this == VendorType.maintenance) return Icons.build_outlined;
+    if (this == VendorType.other) return Icons.more_horiz;
+    return Icons.category_outlined;
   }
 }
 

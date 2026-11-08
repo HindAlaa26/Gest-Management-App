@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:gest_managment_app/core/models/guest_request.dart';
 import 'package:gest_managment_app/core/network/api_service.dart';
 import 'package:gest_managment_app/core/theme/theme.dart';
+import 'package:gest_managment_app/core/utils/client_operation_id.dart';
 import 'package:gest_managment_app/core/utils/request_labels.dart';
 import 'package:gest_managment_app/core/utils/request_lookups.dart';
 import 'package:gest_managment_app/core/widgets/delivery_room_card.dart';
@@ -28,7 +29,7 @@ class ReviewRequestScreen extends StatefulWidget {
 }
 
 class _ReviewRequestScreenState extends State<ReviewRequestScreen> {
-  static const int maxNoteLength = 300;
+  static const int maxNoteLength = 2000;
 
   final TextEditingController noteController = TextEditingController();
 
@@ -36,6 +37,11 @@ class _ReviewRequestScreenState extends State<ReviewRequestScreen> {
   int urgencyIndex = 0;
   bool loading = false;
   String? error;
+
+  // Same id when the guest taps Send again after a failure, so the backend
+  // never creates the request twice.
+  String clientOperationId = newClientOperationId();
+  String? sentSignature;
 
   @override
   void dispose() {
@@ -51,12 +57,22 @@ class _ReviewRequestScreenState extends State<ReviewRequestScreen> {
       error = null;
     });
 
+    final urgency = urgencies[urgencyIndex];
+    final note = noteController.text.trim();
+    final signature = '${urgency.key}|$note';
+    // Same content keeps the same id (safe retry); changed content gets a new one.
+    if (sentSignature != null && sentSignature != signature) {
+      clientOperationId = newClientOperationId();
+    }
+    sentSignature = signature;
+
     try {
       final request = await ApiService().sendRequest(
         vendorType: widget.vendorType,
-        urgency: urgencies[urgencyIndex],
+        urgency: urgency,
         lines: widget.lines,
-        note: noteController.text.trim(),
+        note: note,
+        clientOperationId: clientOperationId,
       );
       if (!mounted) return;
 

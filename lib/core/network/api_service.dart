@@ -901,18 +901,8 @@ class ApiService {
   }
 
   static VendorType _vendorTypeFrom(Object? value) {
-    switch ('$value'.toLowerCase()) {
-      case 'water':
-        return VendorType.water;
-      case 'drinks':
-        return VendorType.drinks;
-      case 'cleaning':
-        return VendorType.cleaning;
-      case 'maintenance':
-        return VendorType.maintenance;
-      default:
-        return VendorType.other;
-    }
+    final text = value == null ? '' : '$value'.trim();
+    return text.isEmpty ? VendorType.other : VendorType(text);
   }
 
   static RequestUrgency _urgencyFrom(Object? value) {
@@ -1017,9 +1007,11 @@ class ApiService {
     required VendorType vendorType,
     required RequestUrgency urgency,
     required List<RequestLine> lines,
+    required String clientOperationId,
     String note = '',
   }) async {
     final body = <String, dynamic>{
+      'clientOperationId': clientOperationId,
       'items': [
         for (final line in lines)
           {'catalogueItemId': line.item.id, 'quantity': line.qty},

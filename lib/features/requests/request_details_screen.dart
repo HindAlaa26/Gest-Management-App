@@ -293,7 +293,7 @@ class _RequestDetailsScreenState extends State<RequestDetailsScreen> {
               const SizedBox(height: 12),
               TextField(
                 controller: commentController,
-                maxLength: 300,
+                maxLength: 1000,
                 minLines: 2,
                 maxLines: 4,
                 decoration: InputDecoration(

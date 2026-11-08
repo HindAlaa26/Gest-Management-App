@@ -1,4 +1,30 @@
-enum VendorType { water, drinks, cleaning, maintenance, other }
+class VendorType {
+  const VendorType(this.code);
+
+  final String code;
+
+  static const water = VendorType('Water');
+  static const drinks = VendorType('Drinks');
+  static const cleaning = VendorType('Cleaning');
+  static const maintenance = VendorType('Maintenance');
+  static const other = VendorType('Other');
+
+  static const List<VendorType> defaults = [
+    water,
+    drinks,
+    cleaning,
+    maintenance,
+    other,
+  ];
+
+  String get key => code.toLowerCase();
+
+  @override
+  bool operator ==(Object other) => other is VendorType && other.key == key;
+
+  @override
+  int get hashCode => key.hashCode;
+}
 
 class RequestUrgency {
   const RequestUrgency(this.name);
