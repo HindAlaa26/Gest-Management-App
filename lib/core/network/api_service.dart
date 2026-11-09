@@ -668,26 +668,41 @@ class ApiService {
         'roomNumber': roomNumber.trim(),
         'lastName': lastName.trim(),
       }, auth: false);
-      final data = json['data'] as Map<String, dynamic>;
-      Session.applyToken(data['accessToken'] as String);
-      final hotel = (data['propertyName'] as String?)?.trim();
-      Session.propertyName = (hotel == null || hotel.isEmpty) ? null : hotel;
-      final stay = GuestStay(
-        guestName: data['guestName'] as String,
-        roomNumber: data['roomNumber'] as String,
-        checkout: DateTime.parse(data['checkoutDate'] as String),
-      );
-      Session.currentStay = stay;
-      unawaited(SessionStore.save(
-        token: Session.token!,
-        stay: stay,
-        propertyName: Session.propertyName,
-      ));
-      unawaited(prefetch());
-      return stay;
+      return _startSession(json['data'] as Map<String, dynamic>);
     } on UnauthorizedException {
       throw InvalidCredentialsException();
     }
+  }
+
+  /// Sign in with the token read from the keycard QR code.
+  Future<GuestStay> signInWithQr(String token) async {
+    try {
+      final json = await ApiClient.post('/api/guest-auth/login-qr', {
+        'token': token.trim(),
+      }, auth: false);
+      return _startSession(json['data'] as Map<String, dynamic>);
+    } on UnauthorizedException {
+      throw InvalidCredentialsException();
+    }
+  }
+
+  GuestStay _startSession(Map<String, dynamic> data) {
+    Session.applyToken(data['accessToken'] as String);
+    final hotel = (data['propertyName'] as String?)?.trim();
+    Session.propertyName = (hotel == null || hotel.isEmpty) ? null : hotel;
+    final stay = GuestStay(
+      guestName: data['guestName'] as String,
+      roomNumber: data['roomNumber'] as String,
+      checkout: DateTime.parse(data['checkoutDate'] as String),
+    );
+    Session.currentStay = stay;
+    unawaited(SessionStore.save(
+      token: Session.token!,
+      stay: stay,
+      propertyName: Session.propertyName,
+    ));
+    unawaited(prefetch());
+    return stay;
   }
  
   Future<List<EventItem>> getEvents({bool refresh = false}) async {

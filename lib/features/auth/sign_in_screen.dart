@@ -5,6 +5,7 @@ import 'package:gest_managment_app/core/network/api_service.dart';
 import 'package:gest_managment_app/core/theme/theme.dart';
 import 'package:gest_managment_app/core/widgets/custom_text_field.dart';
 import 'package:gest_managment_app/core/widgets/loading_button.dart';
+import 'package:gest_managment_app/features/auth/qr_scan_screen.dart';
 import 'package:gest_managment_app/features/shell/main_shell.dart';
 
 class SignInScreen extends StatefulWidget {
@@ -229,9 +230,10 @@ class _SignInScreenState extends State<SignInScreen> {
                                 height: 56,
                                 child: OutlinedButton.icon(
                                   onPressed: () {
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      const SnackBar(
-                                        content: Text('QR sign-in is coming soon'),
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (context) => const QrScanScreen(),
                                       ),
                                     );
                                   },
