@@ -10,7 +10,7 @@ import 'package:gest_managment_app/features/splash/splash_screen.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await PushService.init();
+  PushService.start();
   //  DevicePreview.enable();
   ApiClient.onUnauthorized = SessionGuard.expired;
   runApp(const MyApp());

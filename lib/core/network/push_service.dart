@@ -16,6 +16,14 @@ class PushService {
   static RemoteMessage? _pendingOpen;
   static bool _listeningToTokenRefresh = false;
 
+  /// Completes when the push setup has finished (or failed).
+  static Future<void> ready = Future<void>.value();
+
+  /// Starts the push setup without blocking the first screen.
+  static void start() {
+    ready = init();
+  }
+
   static Future<void> init() async {
     try {
       await Firebase.initializeApp(
@@ -37,6 +45,7 @@ class PushService {
 
    
   static Future<void> onSignedIn() async {
+    await ready;
     if (!enabled) return;
 
     try {
