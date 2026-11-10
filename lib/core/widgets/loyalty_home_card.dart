@@ -54,10 +54,9 @@ class _LoyaltyHomeCardState extends State<LoyaltyHomeCard> {
 
     final textTheme = Theme.of(context).textTheme;
     final palette = current.tier.palette;
-    final next = current.nextTier;
-    final caption = next == null
+    final caption = !current.hasNextTier
         ? "You've reached our top tier"
-        : '${formatPoints(current.pointsToNext)} points to ${next.label}';
+        : '${formatPoints(current.pointsToNext)} points to ${current.nextTierLabel}';
 
     return Padding(
       padding: const EdgeInsets.only(top: 18),
@@ -120,7 +119,7 @@ class _LoyaltyHomeCardState extends State<LoyaltyHomeCard> {
                 ),
               ],
             ),
-            if (next != null) ...[
+            if (current.hasNextTier) ...[
               const SizedBox(height: 12),
               LoyaltyProgressBar(
                 progress: current.progress,
