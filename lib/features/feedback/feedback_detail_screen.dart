@@ -31,7 +31,7 @@ class FeedbackDetailScreen extends StatelessWidget {
                 Row(
                   children: [
                     if (record.type == FeedbackType.complaint) ...[
-                      StatusBadge(status: record.status),
+                      StatusBadge(status: record.status, label: record.statusLabel),
                       const SizedBox(width: 10),
                     ],
                     Text(

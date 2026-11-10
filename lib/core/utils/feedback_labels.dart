@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 
 import 'package:gest_managment_app/core/models/case_status.dart';
 import 'package:gest_managment_app/core/models/feedback_item.dart';
+import 'package:gest_managment_app/core/models/feedback_record.dart';
+import 'package:gest_managment_app/core/utils/case_status_lookups.dart';
 
 extension FeedbackCategoryLabels on FeedbackCategory {
   String get label {
@@ -67,6 +69,14 @@ extension CaseStatusLabels on CaseStatus {
         return 'Resolved';
       case CaseStatus.closed:
         return 'Closed';
+      case CaseStatus.other:
+        return 'Status';
     }
   }
+}
+
+extension FeedbackRecordLabels on FeedbackRecord {
+  /// The status name from the backend list; the built-in label for items made in the app.
+  String get statusLabel =>
+      statusName.isEmpty ? status.label : CaseStatusLookups.label(statusName);
 }

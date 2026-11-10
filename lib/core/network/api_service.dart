@@ -2,7 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:flutter/foundation.dart'
-    show TargetPlatform, defaultTargetPlatform, kIsWeb;
+    show TargetPlatform, defaultTargetPlatform, kIsWeb, debugPrint;
 
 import 'package:gest_managment_app/core/network/api_client.dart';
 import 'package:gest_managment_app/core/network/api_config.dart';
@@ -139,9 +139,69 @@ class ApiService {
     final loaded = await Future.wait(
       pending.map((item) => _loadSurvey(item as Map<String, dynamic>)),
     );
-    final surveys = [for (final survey in loaded) ?survey];
+    final answered = await _loadAnsweredSurveys();
+    final answeredIds = {for (final survey in answered) survey.id};
+    final surveys = [
+      for (final survey in loaded)
+        if (survey != null && !answeredIds.contains(survey.id)) survey,
+      ...answered,
+    ];
     surveys.sort((a, b) => b.receivedAt.compareTo(a.receivedAt));
     return surveys;
+  }
+
+  /// Surveys the guest already answered, with their answers. Empty if the call fails.
+  Future<List<Survey>> _loadAnsweredSurveys() async {
+    try {
+      final json = await ApiClient.get('/api/guest-app/surveys/answered');
+      final list = (json['data'] as List?) ?? const [];
+      return [
+        for (final item in list)
+          if (item is Map<String, dynamic>) answeredSurveyFromJson(item),
+      ];
+    } catch (error) {
+      debugPrint('Could not load answered surveys: $error');
+      return const <Survey>[];
+    }
+  }
+
+  static Survey answeredSurveyFromJson(Map<String, dynamic> j) {
+    String pick(Object? en, Object? ar) {
+      final english = '${en ?? ''}'.trim();
+      return english.isNotEmpty ? english : '${ar ?? ''}'.trim();
+    }
+
+    final answeredAt = _parseUtc('${j['respondedAtUtc']}');
+    final rawAnswers = [
+      for (final a in (j['answers'] as List?) ?? const [])
+        if (a is Map<String, dynamic>) a,
+    ];
+
+    return Survey(
+      id: '${j['dispatchId']}',
+      title: pick(j['titleEn'], j['titleAr']),
+      contextLabel: '',
+      questions: [
+        for (final a in rawAnswers)
+          SurveyQuestion(
+            id: '${a['questionId']}',
+            type: _surveyQuestionTypeFrom(a['questionType']),
+            text: pick(a['questionTextEn'], a['questionTextAr']),
+            isRequired: false,
+          ),
+      ],
+      receivedAt: answeredAt,
+      status: SurveyStatus.answered,
+      answeredAt: answeredAt,
+      answers: [
+        for (final a in rawAnswers)
+          SurveyAnswer(
+            questionId: '${a['questionId']}',
+            rating: (a['numericValue'] as num?)?.toInt(),
+            comment: a['textValue'] as String?,
+          ),
+      ],
+    );
   }
 
   Future<int> getWaitingSurveyCount() async {
@@ -851,6 +911,21 @@ class ApiService {
   }
 
   Future<List<FeedbackRecord>> getMyFeedback() async {
+    try {
+      final json = await ApiClient.get(
+        '/api/guest-app/feedback',
+        query: {'page': '1', 'size': '100'},
+      );
+      final list = (json['data'] as List?) ?? const [];
+      final fromServer = [
+        for (final item in list)
+          if (item is Map<String, dynamic>) feedbackRecordFromJson(item),
+      ]..sort((a, b) => b.createdAt.compareTo(a.createdAt));
+      return fromServer;
+    } on ApiException catch (error) {
+      // Not deployed yet on the server: show what this session sent.
+      if (error.statusCode != 404 && error.statusCode != 405) rethrow;
+    }
     final records =
         _sentFeedback[Session.guestProfileId ?? ''] ?? const <FeedbackRecord>[];
     return List<FeedbackRecord>.from(records)
@@ -884,6 +959,43 @@ class ApiService {
         );
 
     return reference;
+  }
+
+  static FeedbackRecord feedbackRecordFromJson(Map<String, dynamic> j) {
+    final categoryName = '${j['category']}'.toLowerCase();
+    var category = FeedbackCategory.other;
+    for (final candidate in FeedbackCategory.values) {
+      if (candidate.name == categoryName) category = candidate;
+    }
+    final statusName = '${j['status'] ?? ''}'.trim();
+    return FeedbackRecord(
+      reference: '${j['referenceNumber'] ?? ''}',
+      type: '${j['feedbackType']}'.toLowerCase() == 'complaint'
+          ? FeedbackType.complaint
+          : FeedbackType.feedback,
+      category: category,
+      message: '${j['message'] ?? ''}',
+      createdAt: _parseUtc('${j['createdAtUtc']}'),
+      status: _caseStatusFrom(statusName),
+      statusName: statusName,
+    );
+  }
+
+  static CaseStatus _caseStatusFrom(String name) {
+    switch (name.toLowerCase()) {
+      case 'open':
+        return CaseStatus.open;
+      case 'inprogress':
+        return CaseStatus.inProgress;
+      case 'waitingonguest':
+        return CaseStatus.waitingOnGuest;
+      case 'resolved':
+        return CaseStatus.resolved;
+      case 'closed':
+        return CaseStatus.closed;
+      default:
+        return CaseStatus.other;
+    }
   }
 
   static String feedbackTypeName(FeedbackType type) {

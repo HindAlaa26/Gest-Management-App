@@ -5,9 +5,12 @@ import 'package:gest_managment_app/core/theme/theme.dart';
 import 'package:gest_managment_app/core/utils/feedback_labels.dart';
 
 class StatusBadge extends StatelessWidget {
-  const StatusBadge({super.key, required this.status});
+  const StatusBadge({super.key, required this.status, this.label});
 
   final CaseStatus status;
+
+  /// The name to show. The built-in name of the status when null.
+  final String? label;
 
   @override
   Widget build(BuildContext context) {
@@ -37,6 +40,7 @@ class StatusBadge extends StatelessWidget {
         borderColor = AppColors.success.withValues(alpha: 0.12);
         break;
       case CaseStatus.closed:
+      case CaseStatus.other:
         backgroundColor = const Color(0xFFF3F5F7);
         textColor = AppColors.muted;
         borderColor = const Color(0xFFF3F5F7);
@@ -63,7 +67,7 @@ class StatusBadge extends StatelessWidget {
           ),
           const SizedBox(width: 6),
           Text(
-            status.label,
+            label ?? status.label,
             style: Theme.of(context).textTheme.labelSmall?.copyWith(
               color: textColor,
               fontWeight: FontWeight.w700,

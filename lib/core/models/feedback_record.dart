@@ -9,6 +9,7 @@ class FeedbackRecord {
     required this.message,
     required this.createdAt,
     required this.status,
+    this.statusName = '',
   });
 
   final String reference;
@@ -17,4 +18,7 @@ class FeedbackRecord {
   final String message;
   final DateTime createdAt;
   final CaseStatus status;
+
+  /// The status as the backend names it (e.g. "InProgress"). Empty for items made in the app.
+  final String statusName;
 }

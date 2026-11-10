@@ -58,7 +58,7 @@ class FeedbackRecordCard extends StatelessWidget {
                 ),
               ),
               if (record.type == FeedbackType.complaint)
-                StatusBadge(status: record.status),
+                StatusBadge(status: record.status, label: record.statusLabel),
             ],
           ),
           const SizedBox(height: 12),
