@@ -45,16 +45,15 @@ class EventCard extends StatelessWidget {
                 ),
               ),
               const SizedBox(width: 12),
-              TypeChip(type: event.type),
+              TypeChip(type: event.type, label: event.typeLabel),
             ],
           ),
           if (showDescription) ...[
             const SizedBox(height: 10),
             Text(
               event.description,
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                color: AppColors.muted,
-              ),
+              style: Theme.of(context).textTheme.bodyMedium
+                  ?.copyWith(color: AppColors.muted),
             ),
           ],
           const SizedBox(height: 14),
@@ -63,38 +62,41 @@ class EventCard extends StatelessWidget {
           Row(
             children: [
               Expanded(
+                child: Row(
+                  children: [
+                    const SizedBox(width: 8),
 
-                child: Row(
-                  children: [
-                    const SizedBox(width: 8),
-             
-             
-              Expanded(
-                child: Row(
-                  children: [
-                    const Icon(Icons.location_on_outlined, color: AppColors.gold, size: 18),
-                    const SizedBox(width: 8),
                     Expanded(
-                      child: Text(
-                        event.place,
-                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                          color: AppColors.navy,
-                        ),
+                      child: Row(
+                        children: [
+                          const Icon(
+                            Icons.location_on_outlined,
+                            color: AppColors.gold,
+                            size: 18,
+                          ),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: Text(
+                              event.place,
+                              style: Theme.of(context).textTheme.bodyMedium
+                                  ?.copyWith(color: AppColors.navy),
+                            ),
+                          ),
+                        ],
                       ),
                     ),
-                  ],
-                ),
-              ),
-                                 const Icon(Icons.access_time, color: AppColors.gold, size: 18),
+                    const Icon(
+                      Icons.access_time,
+                      color: AppColors.gold,
+                      size: 18,
+                    ),
 
-             const SizedBox(width: 12),
-                   Expanded(
-                    
+                    const SizedBox(width: 12),
+                    Expanded(
                       child: Text(
                         timeText,
-                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                          color: AppColors.navy,
-                        ),
+                        style: Theme.of(context).textTheme.bodyMedium
+                            ?.copyWith(color: AppColors.navy),
                       ),
                     ),
                   ],

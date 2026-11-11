@@ -40,7 +40,7 @@ class OfferCard extends StatelessWidget {
                   crossAxisAlignment: WrapCrossAlignment.center,
                   children: [
                     Text(
-                      offer.type.label.toUpperCase(),
+                      offer.typeLabel.toUpperCase(),
                       style: textTheme.labelSmall?.copyWith(
                         color: past ? AppColors.muted : AppColors.goldDeep,
                         fontWeight: FontWeight.w700,
@@ -126,10 +126,8 @@ class _OfferChip extends StatelessWidget {
       ),
       child: Text(
         text,
-        style: Theme.of(context).textTheme.labelSmall?.copyWith(
-          color: foreground,
-          fontWeight: FontWeight.w700,
-        ),
+        style: Theme.of(context).textTheme.labelSmall
+            ?.copyWith(color: foreground, fontWeight: FontWeight.w700),
       ),
     );
   }

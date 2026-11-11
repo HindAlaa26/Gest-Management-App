@@ -30,9 +30,7 @@ class _OfferDetailScreenState extends State<OfferDetailScreen> {
     if (!widget.offer.isNew) return;
     try {
       await ApiService().markOfferOpened(widget.offer.id);
-    } catch (_) {
-     
-    }
+    } catch (_) {}
   }
 
   Future<void> showCode() {
@@ -67,16 +65,15 @@ class _OfferDetailScreenState extends State<OfferDetailScreen> {
                         icon: offer.type.icon,
                         size: 52,
                         iconSize: 26,
-                        background:
-                            available ? AppColors.goldLight : AppColors.softGrey,
-                        color: available
-                            ? AppColors.goldDeep
-                            : AppColors.muted,
+                        background: available
+                            ? AppColors.goldLight
+                            : AppColors.softGrey,
+                        color: available ? AppColors.goldDeep : AppColors.muted,
                       ),
                       const SizedBox(width: 14),
                       Expanded(
                         child: Text(
-                          offer.type.label.toUpperCase(),
+                          offer.typeLabel.toUpperCase(),
                           style: textTheme.labelLarge?.copyWith(
                             color: available
                                 ? AppColors.goldDeep

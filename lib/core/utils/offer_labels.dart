@@ -35,6 +35,11 @@ extension OfferTypeLabels on OfferType {
   }
 }
 
+extension OfferTypeText on Offer {
+  String get typeLabel =>
+      type == OfferType.other && typeName.isNotEmpty ? typeName : type.label;
+}
+
 String validUntilText(Offer offer) {
   return 'Valid until ${formatDay(offer.validUntil)}';
 }

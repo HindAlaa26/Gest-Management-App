@@ -1,6 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:gest_managment_app/core/models/guest_request.dart';
 import 'package:gest_managment_app/core/models/offer.dart';
+import 'package:gest_managment_app/core/network/api_service.dart';
 import 'package:gest_managment_app/core/utils/offer_labels.dart';
 import 'package:gest_managment_app/core/utils/request_labels.dart';
 
@@ -37,6 +38,18 @@ void main() {
     test('has a neutral label and icon', () {
       expect(OfferType.other.label, 'Offer');
       expect(OfferType.other.icon, isNotNull);
+    });
+
+    test('shows the name from the backend', () {
+      final offer = ApiService.offerFromJson({
+        'id': 'o1',
+        'offerTitleEn': 'Gift',
+        'offerType': 'BirthdayBonus',
+        'expiredAtUtc': '2030-01-01T00:00:00Z',
+      });
+
+      expect(offer.type, OfferType.other);
+      expect(offer.typeLabel, 'Birthday bonus');
     });
   });
 }

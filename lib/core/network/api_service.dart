@@ -39,7 +39,10 @@ class Session {
   static bool isExpiredJwt(String jwt, {DateTime? now}) {
     final exp = _decodeClaims(jwt)['exp'];
     if (exp is! num) return true;
-    final expiry = DateTime.fromMillisecondsSinceEpoch(exp.toInt() * 1000, isUtc: true);
+    final expiry = DateTime.fromMillisecondsSinceEpoch(
+      exp.toInt() * 1000,
+      isUtc: true,
+    );
     return !(now ?? DateTime.now().toUtc()).isBefore(expiry);
   }
 
@@ -61,7 +64,9 @@ class Session {
     try {
       final parts = jwt.split('.');
       if (parts.length != 3) return const {};
-      final payload = utf8.decode(base64Url.decode(base64Url.normalize(parts[1])));
+      final payload = utf8.decode(
+        base64Url.decode(base64Url.normalize(parts[1])),
+      );
       final decoded = jsonDecode(payload);
       return decoded is Map<String, dynamic> ? decoded : const {};
     } catch (_) {
@@ -108,7 +113,6 @@ class ApiService {
     _catalogueCache.clear();
   }
 
-
   static Future<void> prefetch() async {
     final api = ApiService();
     Future<void> safe(Future<void> Function() job) async {
@@ -150,7 +154,6 @@ class ApiService {
     return surveys;
   }
 
-  /// Surveys the guest already answered, with their answers. Empty if the call fails.
   Future<List<Survey>> _loadAnsweredSurveys() async {
     try {
       final json = await ApiClient.get('/api/guest-app/surveys/answered');
@@ -218,7 +221,6 @@ class ApiService {
         json['data'] as Map<String, dynamic>,
         receivedAt: _parseUtc(pending['dispatchedAtUtc'] as String),
       );
-      // A survey without questions cannot be answered, so it is not shown.
       return survey.questions.isEmpty ? null : survey;
     } on ApiException catch (error) {
       if (error.statusCode == 404) return null;
@@ -235,11 +237,15 @@ class ApiService {
       return english.isNotEmpty ? english : '${j[ar] ?? ''}'.trim();
     }
 
-    final rawQuestions = [
-      for (final q in (j['questions'] as List?) ?? const [])
-        q as Map<String, dynamic>,
-    ]..sort((a, b) => ((a['sortOrder'] as num?) ?? 0)
-        .compareTo((b['sortOrder'] as num?) ?? 0));
+    final rawQuestions =
+        [
+          for (final q in (j['questions'] as List?) ?? const [])
+            q as Map<String, dynamic>,
+        ]..sort(
+          (a, b) => ((a['sortOrder'] as num?) ?? 0).compareTo(
+            (b['sortOrder'] as num?) ?? 0,
+          ),
+        );
 
     return Survey(
       id: '${j['dispatchId']}',
@@ -320,10 +326,12 @@ class ApiService {
     final openedAt = j['openedAtUtc'] as String?;
     final redeemedAt = j['redeemedAtUtc'] as String?;
 
+    final type = _offerTypeFrom(j['offerType']);
     return Offer(
       id: '${j['id']}',
       title: titleEn.isNotEmpty ? titleEn : titleAr,
-      type: _offerTypeFrom(j['offerType']),
+      type: type,
+      typeName: _unknownTypeName(j['offerType'], type == OfferType.other),
       validUntil: _parseUtc(j['expiredAtUtc'] as String),
       code: '${j['redemptionCode'] ?? ''}',
       description: descEn.isNotEmpty ? descEn : descAr,
@@ -385,7 +393,6 @@ class ApiService {
           dataRequestFromExportJson(row as Map<String, dynamic>),
       ];
     } on ApiException catch (error) {
-      // Server without the list endpoint: use the exports made in this session.
       if (error.statusCode != 404 && error.statusCode != 405) rethrow;
     }
 
@@ -412,7 +419,6 @@ class ApiService {
     try {
       json = await ApiClient.get('/api/guest-app/anonymization');
     } on ApiException catch (error) {
-      // Not deployed yet on the server: show the page with no deletion requests.
       if (error.statusCode == 404) return const <DataRequest>[];
       rethrow;
     }
@@ -536,7 +542,7 @@ class ApiService {
     );
   }
 
-   Future<({List<LoyaltyEntry> entries, int total})> getLoyaltyLedgerPage({
+  Future<({List<LoyaltyEntry> entries, int total})> getLoyaltyLedgerPage({
     required int page,
     required int pageSize,
   }) async {
@@ -557,20 +563,23 @@ class ApiService {
   }
 
   static LoyaltyEntry _loyaltyEntryFromJson(Map<String, dynamic> j, int index) {
-    final kind = '${j['type']}'.toLowerCase();
-    // An unknown type from the backend gets a neutral icon and label.
+    final rawType = '${j['type'] ?? ''}'.trim();
+    String label = rawType.isEmpty || rawType == 'null'
+        ? 'Activity'
+        : RequestLookups.humanize(rawType);
+
+    
     LoyaltyEntryType type = LoyaltyEntryType.other;
-    String label = 'Activity';
-    if (kind == 'earn') {
+    if (rawType.toLowerCase() == 'earn') {
       type = LoyaltyEntryType.earn;
       label = 'Earned';
-    } else if (kind == 'redeem') {
+    } else if (rawType.toLowerCase() == 'redeem') {
       type = LoyaltyEntryType.redeem;
       label = 'Redeemed';
-    } else if (kind == 'expire') {
+    } else if (rawType.toLowerCase() == 'expire') {
       type = LoyaltyEntryType.expire;
       label = 'Expired';
-    } else if (kind == 'adjust') {
+    } else if (rawType.toLowerCase() == 'adjust') {
       type = LoyaltyEntryType.adjust;
       label = 'Adjustment';
     }
@@ -595,7 +604,6 @@ class ApiService {
     return list;
   }
 
-  
   Future<void> markNotificationRead(String id) async {
     final room = Session.currentStay?.roomNumber ?? 'unknown';
     final list = myNotificationsByRoom[room];
@@ -620,7 +628,10 @@ class ApiService {
 
   void addNotification(AppNotification notification) {
     final room = Session.currentStay?.roomNumber ?? 'unknown';
-    final list = myNotificationsByRoom.putIfAbsent(room, () => <AppNotification>[]);
+    final list = myNotificationsByRoom.putIfAbsent(
+      room,
+      () => <AppNotification>[],
+    );
     if (list.any((n) => n.id == notification.id)) return;
     list.insert(0, notification);
   }
@@ -644,8 +655,9 @@ class ApiService {
     final token = lastPushToken;
     if (token == null || Session.token == null) return;
     lastPushToken = null;
-    ApiClient.delete('/api/guest-app/push-tokens', {'token': token})
-        .then((_) {}, onError: (_) {});
+    ApiClient.delete('/api/guest-app/push-tokens', {
+      'token': token,
+    }).then((_) {}, onError: (_) {});
   }
 
   static const int _messagesPageSize = 100;
@@ -680,7 +692,8 @@ class ApiService {
     );
     final list = (json['data'] as List?) ?? const [];
     final total =
-        ((json['pagenation'] as Map?)?['total'] as num?)?.toInt() ?? list.length;
+        ((json['pagenation'] as Map?)?['total'] as num?)?.toInt() ??
+        list.length;
     _messagesTotal = total;
     return list
         .map((e) => _chatMessageFromJson(e as Map<String, dynamic>))
@@ -689,7 +702,6 @@ class ApiService {
 
   static int _messagesTotal = 0;
 
- 
   Future<List<ChatMessage>> getMessages() async {
     final first = await _fetchMessagesPage(1);
     final lastPage = (_messagesTotal / _messagesPageSize).ceil();
@@ -705,11 +717,11 @@ class ApiService {
   }
 
   Future<ChatMessage> sendMessage(String text) async {
-    final json = await ApiClient.post(
-      '/api/guest-app/conversation/messages',
-      {'body': text.trim()},
-    );
-    final id = (json['data'] as Map?)?['id']?.toString() ??
+    final json = await ApiClient.post('/api/guest-app/conversation/messages', {
+      'body': text.trim(),
+    });
+    final id =
+        (json['data'] as Map?)?['id']?.toString() ??
         'msg-${DateTime.now().microsecondsSinceEpoch}';
     return ChatMessage(
       id: id,
@@ -734,7 +746,7 @@ class ApiService {
     }
   }
 
-  /// Sign in with the token read from the keycard QR code.
+  
   Future<GuestStay> signInWithQr(String token) async {
     try {
       final json = await ApiClient.post('/api/guest-auth/login-qr', {
@@ -756,15 +768,17 @@ class ApiService {
       checkout: DateTime.parse(data['checkoutDate'] as String),
     );
     Session.currentStay = stay;
-    unawaited(SessionStore.save(
-      token: Session.token!,
-      stay: stay,
-      propertyName: Session.propertyName,
-    ));
+    unawaited(
+      SessionStore.save(
+        token: Session.token!,
+        stay: stay,
+        propertyName: Session.propertyName,
+      ),
+    );
     unawaited(prefetch());
     return stay;
   }
- 
+
   Future<List<EventItem>> getEvents({bool refresh = false}) async {
     final cached = _eventsCache;
     if (!refresh && cached != null && cached.fresh(_publicCacheLife)) {
@@ -777,13 +791,19 @@ class ApiService {
 
   Future<List<EventItem>> _fetchEvents() async {
     final propertyId = Session.propertyId;
-    if (propertyId == null) throw UnauthorizedException('Please sign in again.');
+    if (propertyId == null)
+      throw UnauthorizedException('Please sign in again.');
 
     final query = <String, String>{'from': _ymd(DateTime.now())};
     final checkout = Session.currentStay?.checkout;
     final today = DateTime.now();
     final todayOnly = DateTime(today.year, today.month, today.day);
-    if (checkout != null && !DateTime(checkout.year, checkout.month, checkout.day).isBefore(todayOnly)) {
+    if (checkout != null &&
+        !DateTime(
+          checkout.year,
+          checkout.month,
+          checkout.day,
+        ).isBefore(todayOnly)) {
       query['to'] = _ymd(checkout);
     }
 
@@ -793,9 +813,7 @@ class ApiService {
       auth: false,
     );
     final list = (json['data'] as List?) ?? const [];
-    return list
-        .map((e) => _eventFromJson(e as Map<String, dynamic>))
-        .toList();
+    return list.map((e) => _eventFromJson(e as Map<String, dynamic>)).toList();
   }
 
   Future<List<Restaurant>> getRestaurants({bool refresh = false}) async {
@@ -810,7 +828,8 @@ class ApiService {
 
   Future<List<Restaurant>> _fetchRestaurants() async {
     final propertyId = Session.propertyId;
-    if (propertyId == null) throw UnauthorizedException('Please sign in again.');
+    if (propertyId == null)
+      throw UnauthorizedException('Please sign in again.');
 
     final json = await ApiClient.get(
       '/api/public/properties/$propertyId/restaurants',
@@ -839,7 +858,31 @@ class ApiService {
     return s.substring(0, 5);
   }
 
+  static EventType _eventTypeFrom(Object? value) {
+    switch ('$value'.trim().toLowerCase()) {
+      case 'party':
+      case '2':
+        return EventType.party;
+      case 'event':
+      case '1':
+      case '':
+      case 'null':
+        return EventType.event;
+      default:
+        return EventType.other;
+    }
+  }
+
+  
+  static String _unknownTypeName(Object? value, bool unknown) {
+    if (!unknown) return '';
+    final raw = '${value ?? ''}'.trim();
+    if (raw.isEmpty || raw == 'null') return '';
+    return RequestLookups.humanize(raw);
+  }
+
   static EventItem _eventFromJson(Map<String, dynamic> j) {
+    final type = _eventTypeFrom(j['eventType']);
     return EventItem(
       id: j['id'] as String,
       title: _text(j['titleEn'], j['titleAr']),
@@ -847,9 +890,8 @@ class ApiService {
       startTime: _hhmm(j['startTime']) ?? '00:00',
       endTime: _hhmm(j['endTime']) ?? '00:00',
       place: (j['location'] as String?) ?? '',
-      type: '${j['eventType']}'.toLowerCase() == 'party'
-          ? EventType.party
-          : EventType.event,
+      type: type,
+      typeName: _unknownTypeName(j['eventType'], type == EventType.other),
       description: _text(j['descriptionEn'], j['descriptionAr']),
     );
   }
@@ -888,8 +930,8 @@ class ApiService {
     final label = !stated
         ? 'Opening days not listed'
         : weekdays.length == 7
-            ? 'Open every day'
-            : weekdays.map((d) => _weekdayNames[d - 1]).join(', ');
+        ? 'Open every day'
+        : weekdays.map((d) => _weekdayNames[d - 1]).join(', ');
 
     return Restaurant(
       name: _text(j['nameEn'], j['nameAr']),
@@ -923,7 +965,7 @@ class ApiService {
       ]..sort((a, b) => b.createdAt.compareTo(a.createdAt));
       return fromServer;
     } on ApiException catch (error) {
-      // Not deployed yet on the server: show what this session sent.
+     
       if (error.statusCode != 404 && error.statusCode != 405) rethrow;
     }
     final records =
@@ -1006,7 +1048,6 @@ class ApiService {
     return category.name;
   }
 
-
   static final Map<String, CatalogueItem> _catalogueCache = {};
 
   Future<List<CatalogueItem>> _loadCatalogue() async {
@@ -1026,15 +1067,13 @@ class ApiService {
     if (_catalogueCache.isNotEmpty) return;
     try {
       await _loadCatalogue();
-    } catch (_) {
-    }
+    } catch (_) {}
   }
 
   Future<List<CatalogueItem>> getCatalogue(VendorType type) async {
     final items = await _loadCatalogue();
     return items.where((item) => item.vendorType == type).toList();
   }
-
 
   static DateTime _parseUtc(String value) {
     final hasZone =
@@ -1062,7 +1101,7 @@ class ApiService {
         return RequestStatus.inProgress;
       case 'done':
         return RequestStatus.done;
-            case 'cancelled':
+      case 'cancelled':
         return RequestStatus.cancelled;
       case 'failed':
         return RequestStatus.failed;
@@ -1141,8 +1180,9 @@ class ApiService {
 
     return GuestRequest(
       reference: j['id'] as String,
-      vendorType:
-          lines.isEmpty ? VendorType.other : lines.first.item.vendorType,
+      vendorType: lines.isEmpty
+          ? VendorType.other
+          : lines.first.item.vendorType,
       lines: lines,
       urgency: _urgencyFrom(j['urgency']),
       note: (j['note'] as String?) ?? '',
@@ -1156,7 +1196,6 @@ class ApiService {
       allowCancel: allowed is Map && allowed['canCancel'] == true,
     );
   }
-
 
   Future<GuestRequest> sendRequest({
     required VendorType vendorType,
