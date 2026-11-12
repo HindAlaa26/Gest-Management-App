@@ -108,7 +108,7 @@ class _OfferCodeSheetState extends State<_OfferCodeSheet> {
                           color: AppColors.navy,
                         ),
                       ),
-                      const SizedBox(width: 8),
+                      
                       IconButton(
                         onPressed: copy,
                         tooltip: 'Copy code',
