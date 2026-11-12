@@ -1,58 +1,29 @@
 import 'package:flutter/material.dart';
 
 import 'package:gest_managment_app/core/models/case_status.dart';
-import 'package:gest_managment_app/core/models/feedback_item.dart';
 import 'package:gest_managment_app/core/models/feedback_record.dart';
 import 'package:gest_managment_app/core/utils/case_status_lookups.dart';
+import 'package:gest_managment_app/core/utils/named_lookup.dart';
 
-extension FeedbackCategoryLabels on FeedbackCategory {
-  String get label {
-    switch (this) {
-      case FeedbackCategory.room:
-        return 'Room';
-      case FeedbackCategory.food:
-        return 'Food';
-      case FeedbackCategory.staff:
-        return 'Staff';
-      case FeedbackCategory.other:
-        return 'Other';
-      case FeedbackCategory.maintenance:
-        return 'Maintenance';
-      case FeedbackCategory.housekeeping:
-        return 'Housekeeping';
-      case FeedbackCategory.billing:
-        return 'Billing';
-    }
-  }
 
-  IconData get icon {
-    switch (this) {
-      case FeedbackCategory.room:
-        return Icons.bed_outlined;
-      case FeedbackCategory.food:
-        return Icons.restaurant_outlined;
-      case FeedbackCategory.staff:
-        return Icons.person_outline;
-      case FeedbackCategory.other:
-        return Icons.more_horiz;
-      case FeedbackCategory.maintenance:
-        return Icons.build_outlined;
-      case FeedbackCategory.housekeeping:
-        return Icons.cleaning_services_outlined;
-      case FeedbackCategory.billing:
-        return Icons.receipt_long_outlined;
-    }
-  }
-}
-
-extension FeedbackTypeLabels on FeedbackType {
-  String get label {
-    switch (this) {
-      case FeedbackType.feedback:
-        return 'Feedback';
-      case FeedbackType.complaint:
-        return 'Complaint';
-    }
+IconData feedbackCategoryIcon(String code) {
+  switch (code.trim().toLowerCase()) {
+    case 'room':
+      return Icons.bed_outlined;
+    case 'food':
+      return Icons.restaurant_outlined;
+    case 'staff':
+      return Icons.person_outline;
+    case 'other':
+      return Icons.more_horiz;
+    case 'maintenance':
+      return Icons.build_outlined;
+    case 'housekeeping':
+      return Icons.cleaning_services_outlined;
+    case 'billing':
+      return Icons.receipt_long_outlined;
+    default:
+      return Icons.label_outline;
   }
 }
 
@@ -76,7 +47,12 @@ extension CaseStatusLabels on CaseStatus {
 }
 
 extension FeedbackRecordLabels on FeedbackRecord {
-  /// The status name from the backend list; the built-in label for items made in the app.
   String get statusLabel =>
       statusName.isEmpty ? status.label : CaseStatusLookups.label(statusName);
+
+  String get typeLabel => Lookups.feedbackTypes.label(typeCode);
+
+  String get categoryLabel => Lookups.feedbackCategories.label(categoryCode);
+
+  IconData get categoryIcon => feedbackCategoryIcon(categoryCode);
 }

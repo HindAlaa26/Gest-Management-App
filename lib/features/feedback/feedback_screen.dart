@@ -4,6 +4,7 @@ import 'package:gest_managment_app/core/models/feedback_record.dart';
 import 'package:gest_managment_app/core/network/api_service.dart';
 import 'package:gest_managment_app/core/theme/theme.dart';
 import 'package:gest_managment_app/core/utils/case_status_lookups.dart';
+import 'package:gest_managment_app/core/utils/named_lookup.dart';
 import 'package:gest_managment_app/core/widgets/error_retry_card.dart';
 import 'package:gest_managment_app/core/widgets/loading_view.dart';
 import 'package:gest_managment_app/features/feedback/feedback_detail_screen.dart';
@@ -39,7 +40,11 @@ class _FeedbackScreenState extends State<FeedbackScreen> {
     });
 
     try {
-      await CaseStatusLookups.ensureLoaded();
+      await Future.wait([
+        CaseStatusLookups.ensureLoaded(),
+        Lookups.feedbackTypes.ensureLoaded(),
+        Lookups.feedbackCategories.ensureLoaded(),
+      ]);
       final records = await ApiService().getMyFeedback();
       if (!mounted) return;
       setState(() => _records = records);

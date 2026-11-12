@@ -4,6 +4,7 @@ import 'package:gest_managment_app/core/models/feedback_item.dart';
 import 'package:gest_managment_app/core/network/api_service.dart';
 import 'package:gest_managment_app/core/theme/theme.dart';
 import 'package:gest_managment_app/core/utils/feedback_labels.dart';
+import 'package:gest_managment_app/core/utils/named_lookup.dart';
 import 'package:gest_managment_app/core/widgets/category_option_tile.dart';
 import 'package:gest_managment_app/core/widgets/loading_button.dart';
 import 'package:gest_managment_app/core/widgets/segmented_toggle.dart';
@@ -19,13 +20,28 @@ class NewFeedbackScreen extends StatefulWidget {
 
 class _NewFeedbackScreenState extends State<NewFeedbackScreen> {
   static const int maxMessageLength = 2000;
+  static const int tilesPerRow = 4;
 
   final TextEditingController messageController = TextEditingController();
 
-  int selectedTypeIndex = 0;
-  FeedbackCategory selectedCategory = FeedbackCategory.room;
+  String? selectedTypeCode;
+  String? selectedCategoryCode;
   bool loading = false;
   String? error;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadLookups();
+  }
+
+  Future<void> _loadLookups() async {
+    await Future.wait([
+      Lookups.feedbackTypes.ensureLoaded(),
+      Lookups.feedbackCategories.ensureLoaded(),
+    ]);
+    if (mounted) setState(() {});
+  }
 
   @override
   void dispose() {
@@ -40,6 +56,12 @@ class _NewFeedbackScreenState extends State<NewFeedbackScreen> {
       });
     }
   }
+
+  String get _typeCode =>
+      selectedTypeCode ?? Lookups.feedbackTypes.options.first.code;
+
+  String get _categoryCode =>
+      selectedCategoryCode ?? Lookups.feedbackCategories.options.first.code;
 
   Future<void> sendFeedback() async {
     final message = messageController.text.trim();
@@ -56,8 +78,8 @@ class _NewFeedbackScreenState extends State<NewFeedbackScreen> {
     });
 
     final item = FeedbackItem(
-      type: selectedTypeIndex == 0 ? FeedbackType.feedback : FeedbackType.complaint,
-      category: selectedCategory,
+      typeCode: _typeCode,
+      categoryCode: _categoryCode,
       message: message,
     );
 
@@ -85,9 +107,44 @@ class _NewFeedbackScreenState extends State<NewFeedbackScreen> {
     }
   }
 
+  List<Widget> _categoryRows(List<LookupOption> categories) {
+    final rows = <Widget>[];
+    for (var start = 0; start < categories.length; start += tilesPerRow) {
+      final cells = <Widget>[];
+      for (var i = 0; i < tilesPerRow; i++) {
+        if (i > 0) cells.add(const SizedBox(width: 10));
+        final index = start + i;
+        if (index >= categories.length) {
+          cells.add(const Expanded(child: SizedBox.shrink()));
+          continue;
+        }
+        final option = categories[index];
+        cells.add(
+          CategoryOptionTile(
+            icon: feedbackCategoryIcon(option.code),
+            label: option.name,
+            selected: _categoryCode == option.code,
+            onTap: () {
+              setState(() {
+                selectedCategoryCode = option.code;
+                error = null;
+              });
+            },
+          ),
+        );
+      }
+      if (rows.isNotEmpty) rows.add(const SizedBox(height: 10));
+      rows.add(Row(children: cells));
+    }
+    return rows;
+  }
+
   @override
   Widget build(BuildContext context) {
     final messageLength = messageController.text.length;
+    final types = Lookups.feedbackTypes.options;
+    final categories = Lookups.feedbackCategories.options;
+    final typeIndex = types.indexWhere((t) => t.code == _typeCode);
 
     return Scaffold(
       appBar: AppBar(
@@ -105,11 +162,11 @@ class _NewFeedbackScreenState extends State<NewFeedbackScreen> {
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
                       SegmentedToggle(
-                        labels: const ['Feedback', 'Complaint'],
-                        selectedIndex: selectedTypeIndex,
+                        labels: [for (final type in types) type.name],
+                        selectedIndex: typeIndex < 0 ? 0 : typeIndex,
                         onChanged: (index) {
                           setState(() {
-                            selectedTypeIndex = index;
+                            selectedTypeCode = types[index].code;
                             error = null;
                           });
                         },
@@ -117,103 +174,7 @@ class _NewFeedbackScreenState extends State<NewFeedbackScreen> {
                       const SizedBox(height: 22),
                       const SectionLabel('Category'),
                       const SizedBox(height: 12),
-                      Column(
-                        children: [
-                      Row(
-                        children: [
-                          CategoryOptionTile(
-                            icon: FeedbackCategory.room.icon,
-                            label: FeedbackCategory.room.label,
-                            selected: selectedCategory == FeedbackCategory.room,
-                            onTap: () {
-                              setState(() {
-                                selectedCategory = FeedbackCategory.room;
-                                error = null;
-                              });
-                            },
-                          ),
-                          const SizedBox(width: 10),
-                          CategoryOptionTile(
-                            icon: FeedbackCategory.food.icon,
-                            label: FeedbackCategory.food.label,
-                            selected: selectedCategory == FeedbackCategory.food,
-                            onTap: () {
-                              setState(() {
-                                selectedCategory = FeedbackCategory.food;
-                                error = null;
-                              });
-                            },
-                          ),
-                          const SizedBox(width: 10),
-                          CategoryOptionTile(
-                            icon: FeedbackCategory.staff.icon,
-                            label: FeedbackCategory.staff.label,
-                            selected: selectedCategory == FeedbackCategory.staff,
-                            onTap: () {
-                              setState(() {
-                                selectedCategory = FeedbackCategory.staff;
-                                error = null;
-                              });
-                            },
-                          ),
-                          const SizedBox(width: 10),
-                          CategoryOptionTile(
-                            icon: FeedbackCategory.other.icon,
-                            label: FeedbackCategory.other.label,
-                            selected: selectedCategory == FeedbackCategory.other,
-                            onTap: () {
-                              setState(() {
-                                selectedCategory = FeedbackCategory.other;
-                                error = null;
-                              });
-                            },
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 10),
-                      Row(
-                        children: [
-                          CategoryOptionTile(
-                            icon: FeedbackCategory.maintenance.icon,
-                            label: FeedbackCategory.maintenance.label,
-                            selected: selectedCategory == FeedbackCategory.maintenance,
-                            onTap: () {
-                              setState(() {
-                                selectedCategory = FeedbackCategory.maintenance;
-                                error = null;
-                              });
-                            },
-                          ),
-                          const SizedBox(width: 10),
-                          CategoryOptionTile(
-                            icon: FeedbackCategory.housekeeping.icon,
-                            label: FeedbackCategory.housekeeping.label,
-                            selected: selectedCategory == FeedbackCategory.housekeeping,
-                            onTap: () {
-                              setState(() {
-                                selectedCategory = FeedbackCategory.housekeeping;
-                                error = null;
-                              });
-                            },
-                          ),
-                          const SizedBox(width: 10),
-                          CategoryOptionTile(
-                            icon: FeedbackCategory.billing.icon,
-                            label: FeedbackCategory.billing.label,
-                            selected: selectedCategory == FeedbackCategory.billing,
-                            onTap: () {
-                              setState(() {
-                                selectedCategory = FeedbackCategory.billing;
-                                error = null;
-                              });
-                            },
-                          ),
-                          const SizedBox(width: 10),
-                          const Expanded(child: SizedBox.shrink()),
-                        ],
-                      ),
-                        ],
-                      ),
+                      Column(children: _categoryRows(categories)),
                       const SizedBox(height: 22),
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,

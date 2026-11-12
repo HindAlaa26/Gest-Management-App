@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 
-import 'package:gest_managment_app/core/models/feedback_item.dart';
 import 'package:gest_managment_app/core/models/feedback_record.dart';
 import 'package:gest_managment_app/core/theme/theme.dart';
 import 'package:gest_managment_app/core/utils/feedback_labels.dart';
@@ -37,7 +36,7 @@ class FeedbackRecordCard extends StatelessWidget {
                   shape: BoxShape.circle,
                 ),
                 child: Icon(
-                  record.category.icon,
+                  record.categoryIcon,
                   color: AppColors.teal,
                   size: 20,
                 ),
@@ -48,7 +47,7 @@ class FeedbackRecordCard extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      '${record.type.label} · ${record.category.label}',
+                      '${record.typeLabel} · ${record.categoryLabel}',
                       style: Theme.of(context).textTheme.titleSmall?.copyWith(
                         color: AppColors.navy,
                         fontWeight: FontWeight.w700,
@@ -57,7 +56,7 @@ class FeedbackRecordCard extends StatelessWidget {
                   ],
                 ),
               ),
-              if (record.type == FeedbackType.complaint)
+              if (record.isComplaint)
                 StatusBadge(status: record.status, label: record.statusLabel),
             ],
           ),

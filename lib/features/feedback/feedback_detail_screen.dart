@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 
-import 'package:gest_managment_app/core/models/feedback_item.dart';
 import 'package:gest_managment_app/core/models/feedback_record.dart';
 import 'package:gest_managment_app/core/theme/theme.dart';
 import 'package:gest_managment_app/core/utils/feedback_labels.dart';
@@ -18,7 +17,7 @@ class FeedbackDetailScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(record.type.label),
+        title: Text(record.typeLabel),
       ),
       body: SafeArea(
         child: SingleChildScrollView(
@@ -30,12 +29,12 @@ class FeedbackDetailScreen extends StatelessWidget {
               children: [
                 Row(
                   children: [
-                    if (record.type == FeedbackType.complaint) ...[
+                    if (record.isComplaint) ...[
                       StatusBadge(status: record.status, label: record.statusLabel),
                       const SizedBox(width: 10),
                     ],
                     Text(
-                      record.type.label,
+                      record.typeLabel,
                       style: Theme.of(context).textTheme.titleMedium?.copyWith(
                         color: AppColors.navy,
                         fontWeight: FontWeight.w700,
@@ -55,9 +54,9 @@ class FeedbackDetailScreen extends StatelessWidget {
                 const Divider(),
                 const SizedBox(height: 16),
                 InfoRow(
-                  icon: record.category.icon,
+                  icon: record.categoryIcon,
                   label: 'Category',
-                  text: record.category.label,
+                  text: record.categoryLabel,
                 ),
                 const SizedBox(height: 14),
                 InfoRow(

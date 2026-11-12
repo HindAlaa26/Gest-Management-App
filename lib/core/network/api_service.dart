@@ -16,6 +16,7 @@ import 'package:gest_managment_app/core/models/feedback_item.dart';
 import 'package:gest_managment_app/core/models/feedback_record.dart';
 import 'package:gest_managment_app/core/models/guest_request.dart';
 import 'package:gest_managment_app/core/network/session_store.dart';
+import 'package:gest_managment_app/core/utils/named_lookup.dart';
 import 'package:gest_managment_app/core/utils/request_lookups.dart';
 import 'package:gest_managment_app/core/models/guest_stay.dart';
 import 'package:gest_managment_app/core/models/loyalty.dart';
@@ -304,6 +305,7 @@ class ApiService {
   }
 
   Future<List<Offer>> getOffers() async {
+    await Lookups.offerTypes.ensureLoaded();
     final json = await ApiClient.get('/api/guest-app/offers');
     final list = (json['data'] as List?) ?? const [];
     final offers = [
@@ -331,7 +333,7 @@ class ApiService {
       id: '${j['id']}',
       title: titleEn.isNotEmpty ? titleEn : titleAr,
       type: type,
-      typeName: _unknownTypeName(j['offerType'], type == OfferType.other),
+      typeName: _rawTypeName(j['offerType']),
       validUntil: _parseUtc(j['expiredAtUtc'] as String),
       code: '${j['redemptionCode'] ?? ''}',
       description: descEn.isNotEmpty ? descEn : descAr,
@@ -791,8 +793,9 @@ class ApiService {
 
   Future<List<EventItem>> _fetchEvents() async {
     final propertyId = Session.propertyId;
-    if (propertyId == null)
+    if (propertyId == null) {
       throw UnauthorizedException('Please sign in again.');
+    }
 
     final query = <String, String>{'from': _ymd(DateTime.now())};
     final checkout = Session.currentStay?.checkout;
@@ -828,8 +831,9 @@ class ApiService {
 
   Future<List<Restaurant>> _fetchRestaurants() async {
     final propertyId = Session.propertyId;
-    if (propertyId == null)
+    if (propertyId == null) {
       throw UnauthorizedException('Please sign in again.');
+    }
 
     final json = await ApiClient.get(
       '/api/public/properties/$propertyId/restaurants',
@@ -874,6 +878,11 @@ class ApiService {
   }
 
   
+  static String _rawTypeName(Object? value) {
+    final raw = '${value ?? ''}'.trim();
+    return raw == 'null' ? '' : raw;
+  }
+
   static String _unknownTypeName(Object? value, bool unknown) {
     if (!unknown) return '';
     final raw = '${value ?? ''}'.trim();
@@ -977,8 +986,8 @@ class ApiService {
   Future<String> sendFeedback(FeedbackItem item) async {
     final message = item.message.trim();
     final json = await ApiClient.post('/api/guest-app/feedback', {
-      'feedbackType': feedbackTypeName(item.type),
-      'category': feedbackCategoryName(item.category),
+      'feedbackType': item.typeCode,
+      'category': item.categoryCode,
       'message': message,
     });
 
@@ -992,8 +1001,8 @@ class ApiService {
         .add(
           FeedbackRecord(
             reference: reference,
-            type: item.type,
-            category: item.category,
+            typeCode: item.typeCode,
+            categoryCode: item.categoryCode,
             message: message,
             createdAt: DateTime.now(),
             status: CaseStatus.open,
@@ -1004,18 +1013,11 @@ class ApiService {
   }
 
   static FeedbackRecord feedbackRecordFromJson(Map<String, dynamic> j) {
-    final categoryName = '${j['category']}'.toLowerCase();
-    var category = FeedbackCategory.other;
-    for (final candidate in FeedbackCategory.values) {
-      if (candidate.name == categoryName) category = candidate;
-    }
     final statusName = '${j['status'] ?? ''}'.trim();
     return FeedbackRecord(
       reference: '${j['referenceNumber'] ?? ''}',
-      type: '${j['feedbackType']}'.toLowerCase() == 'complaint'
-          ? FeedbackType.complaint
-          : FeedbackType.feedback,
-      category: category,
+      typeCode: '${j['feedbackType'] ?? ''}'.trim(),
+      categoryCode: '${j['category'] ?? ''}'.trim(),
       message: '${j['message'] ?? ''}',
       createdAt: _parseUtc('${j['createdAtUtc']}'),
       status: _caseStatusFrom(statusName),
@@ -1040,13 +1042,6 @@ class ApiService {
     }
   }
 
-  static String feedbackTypeName(FeedbackType type) {
-    return type == FeedbackType.complaint ? 'Complaint' : 'Feedback';
-  }
-
-  static String feedbackCategoryName(FeedbackCategory category) {
-    return category.name;
-  }
 
   static final Map<String, CatalogueItem> _catalogueCache = {};
 

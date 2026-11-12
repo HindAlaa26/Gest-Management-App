@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 
 import 'package:gest_managment_app/core/models/offer.dart';
 import 'package:gest_managment_app/core/utils/helpers.dart';
+import 'package:gest_managment_app/core/utils/named_lookup.dart';
+import 'package:gest_managment_app/core/utils/request_lookups.dart';
 
 extension OfferTypeLabels on OfferType {
   String get label {
@@ -36,8 +38,14 @@ extension OfferTypeLabels on OfferType {
 }
 
 extension OfferTypeText on Offer {
-  String get typeLabel =>
-      type == OfferType.other && typeName.isNotEmpty ? typeName : type.label;
+
+  String get typeLabel {
+    if (typeName.isEmpty) return type.label;
+    final fromBackend = Lookups.offerTypes.nameOf(typeName);
+    if (fromBackend != null) return fromBackend;
+    if (type == OfferType.other) return RequestLookups.humanize(typeName);
+    return type.label;
+  }
 }
 
 String validUntilText(Offer offer) {
